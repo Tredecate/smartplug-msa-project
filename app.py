@@ -1,5 +1,6 @@
 import httpx
 import asyncio
+import uuid
 import connexion
 from connexion import NoContent
 
@@ -13,7 +14,8 @@ async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
         "plug_id": body["plug_id"],
         "plug_country": body.get("plug_country", None), # Non-required field
         "plug_uptime": body["plug_uptime"],
-        "batch_timestamp": body["report_timestamp"]
+        "batch_timestamp": body["report_timestamp"],
+        "batch_trace_id": str(uuid.uuid4())
     }
 
     if plug_data["plug_country"] is None:
@@ -45,7 +47,8 @@ async def report_internal_temp_readings(body: dict) -> tuple[object, int]:
         "plug_id": body["plug_id"],
         "plug_country": body.get("plug_country", None), # Non-required field
         "plug_uptime": body["plug_uptime"],
-        "batch_timestamp": body["report_timestamp"]
+        "batch_timestamp": body["report_timestamp"],
+        "batch_trace_id": str(uuid.uuid4())
     }
 
     if plug_data["plug_country"] is None:
