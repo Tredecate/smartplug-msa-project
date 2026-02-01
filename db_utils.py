@@ -7,7 +7,7 @@ from models import Base
 
 
 # ENGINE SETUP
-ENGINE = create_engine("sqlite:///plug_readings.db")
+ENGINE = create_engine("mysql://storage_service:$torage_5ervice@localhost/readings")
 
 
 # BASIC FETCHERS
