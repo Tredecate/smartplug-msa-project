@@ -30,6 +30,7 @@ class ReadingBase:
     
     reading_timestamp = mapped_column(ISODateTime(timezone=True),   nullable=False)
     batch_timestamp =   mapped_column(ISODateTime(timezone=True),   nullable=False)
+    batch_trace_id =    mapped_column(Uuid(as_uuid=False),          nullable=False)
     date_created =      mapped_column(DateTime(timezone=True),      nullable=False, server_default=func.now())
 
 
