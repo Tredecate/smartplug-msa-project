@@ -31,10 +31,13 @@ def overlay_dicts(base: dict, overlay: dict) -> dict:
     """
     Recursively overlays one dictionary onto another
     """
+    # Go through key:value pairs in the overlay dict
     for key, value in overlay.items():
+        # If value in both dict is a dict, recurse
         if key in base and isinstance(base[key], dict) and isinstance(value, dict):
             base[key] = overlay_dicts(base[key], value)
         else:
+            # Otherwise just set the value
             base[key] = value
     return base
 

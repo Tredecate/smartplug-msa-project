@@ -4,10 +4,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from models import Base
+from config_handler import APP_CONFIG
 
 
 # ENGINE SETUP
-ENGINE = create_engine("mysql://storage_service:$torage_5ervice@localhost/readings")
+ENGINE = create_engine(f"{APP_CONFIG['db']['protocol']}://{APP_CONFIG['db']['username']}:{APP_CONFIG['db']['password']}@{APP_CONFIG['db']['host']}/{APP_CONFIG['db']['database']}")
 
 
 # BASIC FETCHERS
