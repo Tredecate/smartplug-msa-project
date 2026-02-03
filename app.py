@@ -1,9 +1,10 @@
 import connexion
 from connexion import NoContent
+import logging.config
 
 from db_utils import use_db_session
 from models import EnergyConsumedReading, InternalTempReading
-from config_handler import APP_CONFIG, API_CONFIG
+from config_handler import APP_CONFIG, API_CONFIG, LOG_CONFIG
 
 
 @use_db_session
@@ -12,6 +13,8 @@ def store_energy_consumption_reading(session, body: dict) -> tuple[object, int]:
 
     session.add(reading)
     session.commit()
+
+    logger.debug(f"Stored energy consumption reading for batch with trace id: {body['batch_trace_id']}")
 
     return (NoContent, 201)
 
@@ -23,7 +26,14 @@ def store_internal_temp_reading(session, body: dict) -> tuple[object, int]:
     session.add(reading)
     session.commit()
 
+    logger.debug(f"Stored internal temperature reading for batch with trace id: {body['batch_trace_id']}")
+
     return (NoContent, 201)
+
+
+# SETUP LOGGING
+logging.config.dictConfig(LOG_CONFIG)
+logger = logging.getLogger("basicLogger")
 
 
 # SETUP CONNEXION APP
