@@ -1,0 +1,14 @@
+version: 1
+api:
+  file: openapi.yml
+  spec_dir: "./"
+  strict_validation: true
+  validate_responses: true
+services:
+  self:
+    port: 8080
+  storage:
+    baseurl: http://localhost:8090
+    endpoints:
+      energy: /plug-data/energy-consumed
+      temp: /plug-data/internal-temp
