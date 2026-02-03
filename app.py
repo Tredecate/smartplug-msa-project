@@ -4,8 +4,7 @@ import uuid
 import connexion
 from connexion import NoContent
 
-
-DATABASE_URL = "http://localhost:8090/plug-data"
+from config_handler import STORAGE_CONFIG, APP_CONFIG, API_CONFIG
 
 
 async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
@@ -27,7 +26,7 @@ async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
         for reading in body["readings"]:
             reading_data = plug_data.copy()
             reading_data.update(reading)
-            tasks.append(client.post(DATABASE_URL + "/energy-consumed", json=reading_data))
+            tasks.append(client.post(STORAGE_CONFIG["baseurl"] + STORAGE_CONFIG["endpoints"]["energy"], json=reading_data))
         
         # RUN ALL TASKS
         responses = await asyncio.gather(*tasks, return_exceptions=False)
@@ -60,7 +59,7 @@ async def report_internal_temp_readings(body: dict) -> tuple[object, int]:
         for reading in body["readings"]:
             reading_data = plug_data.copy()
             reading_data.update(reading)
-            tasks.append(client.post(DATABASE_URL + "/internal-temp", json=reading_data))
+            tasks.append(client.post(STORAGE_CONFIG["baseurl"] + STORAGE_CONFIG["endpoints"]["temp"], json=reading_data))
         
         # RUN ALL TASKS
         responses = await asyncio.gather(*tasks, return_exceptions=False)
@@ -74,8 +73,13 @@ async def report_internal_temp_readings(body: dict) -> tuple[object, int]:
     return (NoContent, 201)
 
 
-app = connexion.FlaskApp(__name__, specification_dir='')
-app.add_api("openapi.yml", strict_validation=True, validate_responses=True)
+# SETUP CONNEXION APP
+app = connexion.FlaskApp(__name__, specification_dir=API_CONFIG["spec_dir"])
+app.add_api(API_CONFIG["file"], 
+            strict_validation=API_CONFIG["strict_validation"], 
+            validate_responses=API_CONFIG["validate_responses"])
 
+
+# GO GO GO
 if __name__ == "__main__":
-    app.run(port=8080)
+    app.run(port=APP_CONFIG["port"])
