@@ -3,3 +3,4 @@ __pycache__/
 
 energy_consumption.json
 operating_temperature.json
+*.log
