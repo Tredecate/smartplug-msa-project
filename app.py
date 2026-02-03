@@ -1,10 +1,11 @@
 import httpx
 import asyncio
 import uuid
+import logging.config
 import connexion
 from connexion import NoContent
 
-from config_handler import STORAGE_CONFIG, APP_CONFIG, API_CONFIG
+from config_handler import STORAGE_CONFIG, APP_CONFIG, API_CONFIG, LOG_CONFIG
 
 
 async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
@@ -16,6 +17,8 @@ async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
         "batch_timestamp": body["report_timestamp"],
         "batch_trace_id": str(uuid.uuid4())
     }
+
+    logger.info(f"Received energy consumption report with trace id: {plug_data['batch_trace_id']}")
 
     if plug_data["plug_country"] is None:
         del plug_data["plug_country"]
@@ -34,10 +37,12 @@ async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
         # CHECK STATUS CODES
         for res in responses:
             if res.status_code != 201:
+                logger.info(f"Response status from storage service for event {plug_data['batch_trace_id']}: {res.status_code}")
                 return (NoContent, res.status_code)
     
     # RETURN
-    return (NoContent, 201)
+    logger.info(f"Response status from storage service for event {plug_data['batch_trace_id']}: {responses[0].status_code}")
+    return (NoContent, responses[0].status_code)
 
 
 async def report_internal_temp_readings(body: dict) -> tuple[object, int]:
@@ -53,6 +58,8 @@ async def report_internal_temp_readings(body: dict) -> tuple[object, int]:
     if plug_data["plug_country"] is None:
         del plug_data["plug_country"]
 
+    logger.info(f"Received internal temperature report with trace id: {plug_data['batch_trace_id']}")
+
     # CREATE ASYNC TASKS
     async with httpx.AsyncClient() as client:
         tasks = []
@@ -67,10 +74,17 @@ async def report_internal_temp_readings(body: dict) -> tuple[object, int]:
         # CHECK STATUS CODES
         for res in responses:
             if res.status_code != 201:
+                logger.info(f"Response status from storage service for event {plug_data['batch_trace_id']}: {res.status_code}")
                 return (NoContent, res.status_code)
     
     # RETURN
-    return (NoContent, 201)
+    logger.info(f"Response status from storage service for event {plug_data['batch_trace_id']}: {responses[0].status_code}")
+    return (NoContent, responses[0].status_code)
+
+
+# SETUP LOGGING
+logging.config.dictConfig(LOG_CONFIG)
+logger = logging.getLogger("basicLogger")
 
 
 # SETUP CONNEXION APP
