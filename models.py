@@ -35,6 +35,9 @@ class ReadingBase(Base):
     batch_trace_id =    mapped_column(Uuid(as_uuid=False),          nullable=False)
     date_created =      mapped_column(DateTime(timezone=True),      nullable=False, server_default=func.now())
 
+    def as_dict(self):
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns if column.name != "id"}
+
 
 # SPECIFIC TABLE CLASSES
 class EnergyConsumedReading(ReadingBase):
