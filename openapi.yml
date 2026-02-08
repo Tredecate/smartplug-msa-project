@@ -1,6 +1,6 @@
 openapi: '3.0.0'
 info:
-  description: This API stores Wi-Fi smart-plug operational data as forwarded by a receiver service.
+  description: This API stores and retrieves Wi-Fi smart-plug operational data.
   version: '1.0.0'
   title: Smart-plug Operational Data Storage API
   contact:
@@ -23,6 +23,23 @@ paths:
           description: Energy consumption reading successfully stored
         '400':
           description: 'Bad request, e.g. malformed JSON or missing required fields'
+    
+    get:
+      summary: Retrieves energy consumption readings
+      operationId: app.get_energy_consumption_readings
+      description: Endpoint to retrieve stored energy consumption readings between specified timestamps
+      parameters:
+        - $ref: '#/components/parameters/StartTimestamp'
+        - $ref: '#/components/parameters/EndTimestamp'
+      responses:
+        '200':
+          description: Energy consumption readings successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnergyConsumedReading'
 
   /plug-data/internal-temp:
     post:
@@ -40,6 +57,23 @@ paths:
           description: Internal temperature reading successfully stored
         '400':
           description: 'Bad request, e.g. malformed JSON or missing required fields'
+    
+    get:
+      summary: Retrieves internal temperature readings
+      operationId: app.get_internal_temp_readings
+      description: Endpoint to retrieve stored internal temperature readings between specified timestamps
+      parameters:
+        - $ref: '#/components/parameters/StartTimestamp'
+        - $ref: '#/components/parameters/EndTimestamp'
+      responses:
+        '200':
+          description: Internal temperature readings successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InternalTempReading'
 
 components:
   schemas:
@@ -144,3 +178,22 @@ components:
           format: uuid
           description: Unique identifier assigned by edge service to the batch of readings
           example: '3d1187fe-dc05-4c28-b44e-16d18a74244a'
+  
+  parameters:
+    StartTimestamp:
+      name: start_timestamp
+      in: query
+      description: Start of the timespan, as an ISO 8601 timestamp
+      schema:
+        type: string
+        format: date-time
+        example: '2025-01-13T12:34:59Z'
+    
+    EndTimestamp:
+      name: end_timestamp
+      in: query
+      description: End of the timespan, as an ISO 8601 timestamp
+      schema:
+        type: string
+        format: date-time
+        example: '2025-01-14T12:34:59Z'
