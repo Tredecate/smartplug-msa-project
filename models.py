@@ -21,7 +21,9 @@ class ISODateTime(TypeDecorator):
 
 
 # TEMPLATE CLASS FOR COMMON COLUMNS
-class ReadingBase:
+class ReadingBase(Base):
+    __abstract__ = True
+
     id =                mapped_column(Integer,              primary_key=True, autoincrement=True)
     plug_id =           mapped_column(Uuid(as_uuid=False),  nullable=False)
 
@@ -35,13 +37,13 @@ class ReadingBase:
 
 
 # SPECIFIC TABLE CLASSES
-class EnergyConsumedReading(Base, ReadingBase):
+class EnergyConsumedReading(ReadingBase):
     __tablename__ = "energy_consumed_reading"
     
     energy_consumed_watt_minutes =  mapped_column(Integer,  nullable=False)
     switch_state =                  mapped_column(String(3),   nullable=False)
 
-class InternalTempReading(Base, ReadingBase):
+class InternalTempReading(ReadingBase):
     __tablename__ = "internal_temperature_reading"
     
     internal_temp_celsius = mapped_column(Float,    nullable=False)
