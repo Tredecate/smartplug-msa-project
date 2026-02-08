@@ -1,0 +1,17 @@
+version: 1
+api:
+  file: openapi.yml
+  spec_dir: "./"
+  strict_validation: true
+  validate_responses: true
+services:
+  self:
+    port: 8100
+    proc_interval_secs: 60
+    stats_file: "./data/stats.json"
+    fallback_start_time: "1970-01-01T00:00:00Z"
+  storage:
+    baseurl: http://localhost:8090
+    endpoints:
+      energy: /plug-data/energy-consumed
+      temp: /plug-data/internal-temp
