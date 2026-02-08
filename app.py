@@ -1,6 +1,8 @@
 import connexion
-from connexion import NoContent
 import logging.config
+
+from connexion import NoContent
+from sqlalchemy.orm import Session as _Type_SQLAlchemySession
 
 from db_utils import use_db_session
 from models import EnergyConsumedReading, InternalTempReading
@@ -8,7 +10,7 @@ from config_handler import APP_CONFIG, API_CONFIG, LOG_CONFIG
 
 
 @use_db_session
-def store_energy_consumption_reading(session, body: dict) -> tuple[object, int]:
+def store_energy_consumption_reading(session: _Type_SQLAlchemySession, body: dict) -> tuple[object, int]:
     reading = EnergyConsumedReading(**body) # Unpacking lesgoooo
 
     session.add(reading)
@@ -20,7 +22,7 @@ def store_energy_consumption_reading(session, body: dict) -> tuple[object, int]:
 
 
 @use_db_session
-def store_internal_temp_reading(session, body: dict) -> tuple[object, int]:
+def store_internal_temp_reading(session: _Type_SQLAlchemySession, body: dict) -> tuple[object, int]:
     reading = InternalTempReading(**body)
 
     session.add(reading)
