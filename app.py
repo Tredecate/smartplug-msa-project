@@ -9,6 +9,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from config_handler import APP_CONFIG, API_CONFIG, STORAGE_CONFIG, LOG_CONFIG
 
 
+##### ENDPOINTS #####
 def get_stats():
     logger.info("GET /stats request received")
 
@@ -28,19 +29,7 @@ def get_stats():
     return (stats_dict, 200)
 
 
-def init_scheduler():
-    scheduler = BackgroundScheduler(daemon=True)
-    
-    scheduler.add_job(
-        func=           update_statistics, 
-        trigger=        'interval', 
-        seconds=        APP_CONFIG["proc_interval_secs"], 
-        next_run_time=  datetime.now() + timedelta(seconds=2)
-    )
-
-    scheduler.start()
-
-
+##### STATISTIC FUNCTIONS #####
 def update_statistics():
     logger.info("Periodic statistics update triggered")
 
@@ -151,6 +140,7 @@ def calculate_stats(old_stats: dict, energy_data: list[dict], temp_data: list[di
     return new_stats
 
 
+##### UTIL FUNCTIONS #####
 def read_dict_from_file(file_name: str) -> dict:
     # If the file doesn't exist, return an empty dict
     if not Path(file_name).is_file():
@@ -175,13 +165,26 @@ def write_dict_to_file(file_name: str, content: dict):
         json.dump(content, json_file)
 
 
-# SETUP LOGGING
+##### SETUP SCHEDULER #####
+def init_scheduler():
+    scheduler = BackgroundScheduler(daemon=True)
+    
+    scheduler.add_job(
+        func=           update_statistics, 
+        trigger=        'interval', 
+        seconds=        APP_CONFIG["proc_interval_secs"], 
+        next_run_time=  datetime.now() + timedelta(seconds=2)
+    )
+
+    scheduler.start()
+
+
+##### INIT #####
 Path(LOG_CONFIG["handlers"]["file"]["filename"]).parent.mkdir(parents=True, exist_ok=True)
 logging.config.dictConfig(LOG_CONFIG)
 logger = logging.getLogger("basicLogger")
 
 
-# SETUP CONNEXION APP
 app = connexion.FlaskApp(__name__, specification_dir=API_CONFIG["spec_dir"])
 app.add_api(API_CONFIG["file"], 
             strict_validation=API_CONFIG["strict_validation"], 
