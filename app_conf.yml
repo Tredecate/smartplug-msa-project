@@ -7,8 +7,7 @@ api:
 services:
   self:
     port: 8080
-  storage:
-    baseurl: http://localhost:8090
-    endpoints:
-      energy: /plug-data/energy-consumed
-      temp: /plug-data/internal-temp
+  broker:
+    host: localhost
+    port: 9092
+    topic: events

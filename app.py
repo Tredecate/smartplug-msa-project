@@ -1,11 +1,12 @@
-import httpx
-import asyncio
 import uuid
 import logging.config
 import connexion
+import json
+from datetime import datetime, timezone
+from kafka import KafkaProducer
 from connexion import NoContent
 
-from config_handler import STORAGE_CONFIG, APP_CONFIG, API_CONFIG, LOG_CONFIG
+from config_handler import APP_CONFIG, BROKER_CONFIG, API_CONFIG, LOG_CONFIG
 
 
 async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
@@ -23,26 +24,24 @@ async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
     if plug_data["plug_country"] is None:
         del plug_data["plug_country"]
     
-    # CREATE ASYNC TASKS
-    async with httpx.AsyncClient() as client:
-        tasks = []
-        for reading in body["readings"]:
-            reading_data = plug_data.copy()
-            reading_data.update(reading)
-            tasks.append(client.post(STORAGE_CONFIG["baseurl"] + STORAGE_CONFIG["endpoints"]["energy"], json=reading_data))
-        
-        # RUN ALL TASKS
-        responses = await asyncio.gather(*tasks, return_exceptions=False)
-        
-        # CHECK STATUS CODES
-        for res in responses:
-            if res.status_code != 201:
-                logger.info(f"Response status from storage service for event {plug_data['batch_trace_id']}: {res.status_code}")
-                return (NoContent, res.status_code)
+    # PRODUCE MESSAGES
+    for reading in body["readings"]:
+        reading_data = plug_data.copy()
+        reading_data.update(reading)
+
+        message = {
+            "type": "energy_consumption", 
+            "datetime": datetime.now(tz=timezone.utc).isoformat(),
+            "payload": reading_data
+        }
+
+        producer.send(BROKER_CONFIG["topic"], json.dumps(message).encode('utf-8'))
+    
+    producer.flush()
     
     # RETURN
-    logger.info(f"Response status from storage service for event {plug_data['batch_trace_id']}: {responses[0].status_code}")
-    return (NoContent, responses[0].status_code)
+    logger.info(f"Sent all readings to broker for event {plug_data['batch_trace_id']}")
+    return (NoContent, 201)
 
 
 async def report_internal_temp_readings(body: dict) -> tuple[object, int]:
@@ -59,27 +58,25 @@ async def report_internal_temp_readings(body: dict) -> tuple[object, int]:
         del plug_data["plug_country"]
 
     logger.info(f"Received internal temperature report with trace id: {plug_data['batch_trace_id']}")
+    
+    # PRODUCE MESSAGES
+    for reading in body["readings"]:
+        reading_data = plug_data.copy()
+        reading_data.update(reading)
 
-    # CREATE ASYNC TASKS
-    async with httpx.AsyncClient() as client:
-        tasks = []
-        for reading in body["readings"]:
-            reading_data = plug_data.copy()
-            reading_data.update(reading)
-            tasks.append(client.post(STORAGE_CONFIG["baseurl"] + STORAGE_CONFIG["endpoints"]["temp"], json=reading_data))
-        
-        # RUN ALL TASKS
-        responses = await asyncio.gather(*tasks, return_exceptions=False)
-        
-        # CHECK STATUS CODES
-        for res in responses:
-            if res.status_code != 201:
-                logger.info(f"Response status from storage service for event {plug_data['batch_trace_id']}: {res.status_code}")
-                return (NoContent, res.status_code)
+        message = {
+            "type": "internal_temperature", 
+            "datetime": datetime.now(tz=timezone.utc).isoformat(),
+            "payload": reading_data
+        }
+
+        producer.send(BROKER_CONFIG["topic"], json.dumps(message).encode('utf-8'))
+    
+    producer.flush()
     
     # RETURN
-    logger.info(f"Response status from storage service for event {plug_data['batch_trace_id']}: {responses[0].status_code}")
-    return (NoContent, responses[0].status_code)
+    logger.info(f"Sent all readings to broker for event {plug_data['batch_trace_id']}")
+    return (NoContent, 201)
 
 
 # SETUP LOGGING
@@ -92,6 +89,10 @@ app = connexion.FlaskApp(__name__, specification_dir=API_CONFIG["spec_dir"])
 app.add_api(API_CONFIG["file"], 
             strict_validation=API_CONFIG["strict_validation"], 
             validate_responses=API_CONFIG["validate_responses"])
+
+
+# SETUP KAFKA PRODUCER
+producer = KafkaProducer(bootstrap_servers=f"{BROKER_CONFIG['host']}:{BROKER_CONFIG['port']}")
 
 
 # GO GO GO

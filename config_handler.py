@@ -13,12 +13,10 @@ _DEFAULT_CONFIG = {
         "self": {
             "port": 8080
         },
-        "storage": {
-            "baseurl": "http://localhost:8090",
-            "endpoints": {
-                "energy": "/plug-data/energy-consumed",
-                "temp": "/plug-data/internal-temp"
-            }
+        "broker": {
+            "host": "localhost",
+            "port": 9092,
+            "topic": "events"
         }
     }
 }
@@ -99,7 +97,7 @@ log_config_dict = overlay_dicts(_DEFAULT_LOG_CONFIG, file_log_config)
 # SET GLOBAL CONFIG VARIABLES
 # App config
 APP_CONFIG = config_dict["services"]["self"]
-STORAGE_CONFIG = config_dict["services"]["storage"]
+BROKER_CONFIG = config_dict["services"]["broker"]
 API_CONFIG = config_dict["api"]
 
 # Log config
