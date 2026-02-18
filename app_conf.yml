@@ -14,3 +14,8 @@ services:
       password: $torage_5ervice
       host: localhost
       database: readings
+  broker:
+    host: localhost
+    port: 9092
+    topic: events
+    group_id: storage_service_group

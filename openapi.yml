@@ -8,22 +8,6 @@ info:
 
 paths:
   /plug-data/energy-consumed:
-    post:
-      summary: Stores an energy consumption reading
-      operationId: app.store_energy_consumption_reading
-      description: Endpoint to store an energy consumption reading from Wi-Fi smart-plugs
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EnergyConsumedReading'
-      responses:
-        '201':
-          description: Energy consumption reading successfully stored
-        '400':
-          description: 'Bad request, e.g. malformed JSON or missing required fields'
-    
     get:
       summary: Retrieves energy consumption readings
       operationId: app.get_energy_consumption_readings
@@ -42,22 +26,6 @@ paths:
                   $ref: '#/components/schemas/EnergyConsumedReading'
 
   /plug-data/internal-temp:
-    post:
-      summary: Stores an internal temperature reading
-      operationId: app.store_internal_temp_reading
-      description: Endpoint to store an internal temperature reading from Wi-Fi smart-plugs
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InternalTempReading'
-      responses:
-        '201':
-          description: Internal temperature reading successfully stored
-        '400':
-          description: 'Bad request, e.g. malformed JSON or missing required fields'
-    
     get:
       summary: Retrieves internal temperature readings
       operationId: app.get_internal_temp_readings
