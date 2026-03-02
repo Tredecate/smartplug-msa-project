@@ -1,0 +1,74 @@
+openapi: '3.0.0'
+info:
+  description: This API provides insight into Kafka operations and statistics.
+  version: '1.0.0'
+  title: Kafka Status API
+  contact:
+    email: 'tdezwart@my.bcit.ca'
+
+paths:
+  /energy-event:
+    get:
+      summary: Fetches the specified energy event from Kafka
+      description: Returns the energy reading event from Kafka at the specified index
+      operationId: app.get_energy_event
+      parameters:
+        - $ref: '#/components/parameters/EventIndex'
+      responses:
+        '200':
+          description: Energy reading event successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: No event found at the requested index
+
+  /temperature-event:
+    get:
+      summary: Fetches the specified temperature event from Kafka
+      description: Returns the temperature reading event from Kafka at the specified index
+      operationId: app.get_temperature_event
+      responses:
+        '200':
+          description: Temperature reading event successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: No event found at the requested index
+  
+  /stats:
+    get:
+      responses:
+        '200':
+          description: Description
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventStats'
+
+components:
+  schemas:
+    EventStats:
+      type: object
+      required:
+        - num_energy_events
+        - num_temperature_events
+      properties:
+        num_energy_events:
+          type: integer
+        num_temperature_events:
+          type: integer
+    
+    Event:
+      type: object
+  
+  parameters:
+    EventIndex:
+      name: index
+      in: query
+      description: The index of the event to fetch
+      schema:
+        type: integer
