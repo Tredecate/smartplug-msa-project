@@ -18,7 +18,7 @@ _DEFAULT_CONFIG = {
             "host": "localhost",
             "port": 9092,
             "topic": "events",
-            "group_id": "broker_analyzer_group"
+            #"group_id": "broker_analyzer_group"
         }
     }
 }

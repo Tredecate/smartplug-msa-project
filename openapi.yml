@@ -29,6 +29,8 @@ paths:
       summary: Fetches the specified temperature event from Kafka
       description: Returns the temperature reading event from Kafka at the specified index
       operationId: app.get_temperature_event
+      parameters:
+        - $ref: '#/components/parameters/EventIndex'
       responses:
         '200':
           description: Temperature reading event successfully retrieved
@@ -46,7 +48,7 @@ paths:
       operationId: app.get_stats
       responses:
         '200':
-          description: Description
+          description: Event statistics successfully retrieved
           content:
             application/json:
               schema:
