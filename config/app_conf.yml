@@ -1,0 +1,14 @@
+version: 1
+api:
+  file: openapi.yml
+  spec_dir: "./"
+  strict_validation: true
+  validate_responses: true
+services:
+  self:
+    port: 8110
+  broker:
+    host: localhost
+    port: 9092
+    topic: events
+    group_id: broker_analyzer_group
