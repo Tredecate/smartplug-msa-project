@@ -41,6 +41,9 @@ paths:
   
   /stats:
     get:
+      summary: Fetches count of event types from Kafka
+      description: Returns the count of energy reading events and temperature reading events in Kafka
+      operationId: app.get_stats
       responses:
         '200':
           description: Description
