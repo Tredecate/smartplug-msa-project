@@ -1,5 +1,5 @@
-*.db
 venv/
+_venv/
 __pycache__/
 
-*.log
+logs/
