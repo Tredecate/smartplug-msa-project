@@ -100,6 +100,10 @@ config_dict = overlay_dicts(_DEFAULT_CONFIG, file_config)
 log_config_dict = overlay_dicts(_DEFAULT_LOG_CONFIG, file_log_config)
 
 
+# CREATE LOG DIRECTORY
+Path(log_config_dict["handlers"]["file"]["filename"]).parent.mkdir(parents=True, exist_ok=True)
+
+
 # SET GLOBAL CONFIG VARIABLES
 # App config
 APP_CONFIG = config_dict["services"]["self"]
