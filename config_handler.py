@@ -1,4 +1,5 @@
 import yaml
+from pathlib import Path
 
 # DEFAULT CONFIGURATIONS
 _DEFAULT_CONFIG = {
@@ -39,7 +40,7 @@ _DEFAULT_LOG_CONFIG = {
             "class": "logging.FileHandler",
             "level": "DEBUG",
             "formatter": "simple",
-            "filename": "app.log"
+            "filename": "./logs/app.log"
         }
     },
     "loggers": {
@@ -76,14 +77,14 @@ def overlay_dicts(base: dict, overlay: dict) -> dict:
 # LOAD CONFIGURATION
 # App config
 try:
-    with open("app_conf.yml", 'r') as f:
+    with open(Path("./config/app_conf.yml"), 'r') as f:
         file_config = yaml.safe_load(f)
 except FileNotFoundError:
     file_config = {}
 
 # Log config
 try:
-    with open("log_conf.yml", 'r') as f:
+    with open(Path("./config/log_conf.yml"), 'r') as f:
         file_log_config = yaml.safe_load(f)
 except FileNotFoundError:
     file_log_config = {}
@@ -92,6 +93,10 @@ except FileNotFoundError:
 # OVERLAY LOADED CONFIG OVER DEFAULTS
 config_dict = overlay_dicts(_DEFAULT_CONFIG, file_config)
 log_config_dict = overlay_dicts(_DEFAULT_LOG_CONFIG, file_log_config)
+
+
+# CREATE LOG DIRECTORY
+Path(log_config_dict["handlers"]["file"]["filename"]).parent.mkdir(parents=True, exist_ok=True)
 
 
 # SET GLOBAL CONFIG VARIABLES

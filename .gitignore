@@ -1,6 +1,5 @@
 venv/
+_venv/
 __pycache__/
 
-energy_consumption.json
-operating_temperature.json
-*.log
+logs/
