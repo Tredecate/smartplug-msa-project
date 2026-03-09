@@ -105,7 +105,6 @@ def get_consumer() -> KafkaConsumer:
 
 
 ##### INIT #####
-Path(LOG_CONFIG["handlers"]["file"]["filename"]).parent.mkdir(parents=True, exist_ok=True)
 logging.config.dictConfig(LOG_CONFIG)
 logger = logging.getLogger("basicLogger")
 
