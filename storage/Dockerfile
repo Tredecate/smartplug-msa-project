@@ -5,6 +5,12 @@ WORKDIR /app
 COPY --from=shared shared_requirements.txt .
 RUN pip install --no-cache-dir -r shared_requirements.txt
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-dev \
+    default-libmysqlclient-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
