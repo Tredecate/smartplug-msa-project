@@ -116,4 +116,4 @@ app.add_api(API_CONFIG["file"],
 
 
 if __name__ == "__main__":
-    app.run(port=APP_CONFIG["port"])
+    app.run(port=APP_CONFIG["port"], host=APP_CONFIG["host"])

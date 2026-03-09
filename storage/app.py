@@ -109,4 +109,4 @@ if __name__ == "__main__":
     consumer_thread = Thread(target=consume_broker_messages, daemon=True)
     consumer_thread.start()
     
-    app.run(port=APP_CONFIG["port"])
+    app.run(port=APP_CONFIG["port"], host=APP_CONFIG["host"])

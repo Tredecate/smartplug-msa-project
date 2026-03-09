@@ -97,4 +97,4 @@ producer = KafkaProducer(bootstrap_servers=f"{BROKER_CONFIG['host']}:{BROKER_CON
 
 # GO GO GO
 if __name__ == "__main__":
-    app.run(port=APP_CONFIG["port"])
+    app.run(port=APP_CONFIG["port"], host=APP_CONFIG["host"])
