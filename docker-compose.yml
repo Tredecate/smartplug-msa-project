@@ -53,7 +53,7 @@ services:
       - mysql_data:/var/lib/mysql
   
   kafka:
-    image: apache/kafka:4.2
+    image: apache/kafka:4.2.0
     expose:
       - "9092"
   
