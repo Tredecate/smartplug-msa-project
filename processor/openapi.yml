@@ -1,0 +1,72 @@
+openapi: '3.0.0'
+info:
+  description: This API provides aggregate statistics on operational data from Wi-Fi smart-plugs.
+  version: '1.0.0'
+  title: Smart-plug Data Stats API
+  contact:
+    email: 'tdezwart@my.bcit.ca'
+
+paths:
+  /stats:
+    get:
+      summary: Gets energy consumption and internal temp statistics
+      operationId: app.get_stats
+      description: Returns recent statistics on energy consumption and internal temperature
+      responses:
+        '200':
+          description: Recent statistics successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ReadingStats'
+        
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+components:
+  schemas:
+    ReadingStats:
+      type: object
+      required:
+      - num_energy_readings
+      - min_energy_consumed
+      - max_energy_consumed
+      - avg_energy_consumed
+      - num_temp_readings
+      - min_internal_temp
+      - max_internal_temp
+      - avg_internal_temp
+      properties:
+        num_energy_readings:
+          type: integer
+          example: 30
+        min_energy_consumed:
+          type: integer
+          example: 0
+        max_energy_consumed:
+          type: integer
+          example: 120
+        avg_energy_consumed:
+          type: number
+          example: 15.5
+        num_temp_readings:
+          type: integer
+          example: 30
+        min_internal_temp:
+          type: number
+          example: 25.0
+        max_internal_temp:
+          type: number
+          example: 45.0
+        avg_internal_temp:
+          type: number
+          example: 30.5
