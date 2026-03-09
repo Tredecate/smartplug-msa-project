@@ -12,7 +12,7 @@ services:
     stats_file: "./data/stats.json"
     fallback_start_time: "1970-01-01T00:00:00Z"
   storage:
-    baseurl: http://localhost:8090
+    baseurl: http://storage_svc:8090
     endpoints:
       energy: /plug-data/energy-consumed
       temp: /plug-data/internal-temp

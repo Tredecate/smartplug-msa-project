@@ -13,10 +13,10 @@ services:
       protocol: mysql
       username: storage_service
       password: $torage_5ervice
-      host: localhost
+      host: storage_db
       database: readings
   broker:
-    host: localhost
+    host: kafka
     port: 9092
     topic: events
     group_id: storage_service_group
