@@ -1,0 +1,167 @@
+openapi: '3.0.0'
+info:
+  description: This API stores and retrieves Wi-Fi smart-plug operational data.
+  version: '1.0.0'
+  title: Smart-plug Operational Data Storage API
+  contact:
+    email: 'tdezwart@my.bcit.ca'
+
+paths:
+  /plug-data/energy-consumed:
+    get:
+      summary: Retrieves energy consumption readings
+      operationId: app.get_energy_consumption_readings
+      description: Endpoint to retrieve stored energy consumption readings between specified timestamps
+      parameters:
+        - $ref: '#/components/parameters/StartTimestamp'
+        - $ref: '#/components/parameters/EndTimestamp'
+      responses:
+        '200':
+          description: Energy consumption readings successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnergyConsumedReading'
+
+  /plug-data/internal-temp:
+    get:
+      summary: Retrieves internal temperature readings
+      operationId: app.get_internal_temp_readings
+      description: Endpoint to retrieve stored internal temperature readings between specified timestamps
+      parameters:
+        - $ref: '#/components/parameters/StartTimestamp'
+        - $ref: '#/components/parameters/EndTimestamp'
+      responses:
+        '200':
+          description: Internal temperature readings successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InternalTempReading'
+
+components:
+  schemas:
+    EnergyConsumedReading:
+      type: object
+      required:
+        - plug_id
+        - plug_uptime
+        - energy_consumed_watt_minutes
+        - switch_state
+        - reading_timestamp
+        - batch_timestamp
+      properties:
+        plug_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the smart-plug
+          example: '9eb73489-5ada-4359-959e-d6bec07c38f7'
+        plug_country:
+          type: string
+          description: ISO 3166-1 alpha-2 country code where the smart-plug is deployed
+          example: 'CA'
+        plug_uptime:
+          type: integer
+          description: Uptime of the smart-plug in seconds
+          example: 86400
+        energy_consumed_watt_minutes:
+          type: integer
+          description: Energy consumed over the last minute in watt-minutes
+          example: 15
+        switch_state:
+          type: string
+          description: State of the smart-plug switch during the reading.
+          enum:
+            - 'ON'
+            - 'OFF'
+          example: 'ON'
+        reading_timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the reading was taken
+          example: '2025-01-13T12:34:59Z'
+        batch_timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the batch was sent
+          example: '2025-01-13T12:34:59Z'
+        batch_trace_id:
+          type: string
+          format: uuid
+          description: Unique identifier assigned by edge service to the batch of readings
+          example: '3d1187fe-dc05-4c28-b44e-16d18a74244a'
+
+    InternalTempReading:
+      type: object
+      required:
+        - plug_id
+        - plug_uptime
+        - internal_temp_celsius
+        - thermal_status
+        - reading_timestamp
+        - batch_timestamp
+      properties:
+        plug_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the smart-plug
+          example: '9eb73489-5ada-4359-959e-d6bec07c38f7'
+        plug_country:
+          type: string
+          description: ISO 3166-1 alpha-2 country code where the smart-plug is deployed
+          example: 'CA'
+        plug_uptime:
+          type: integer
+          description: Uptime of the smart-plug in seconds
+          example: 86400
+        internal_temp_celsius:
+          type: number
+          description: Internal temperature in degrees Celsius
+          example: 30.5
+        thermal_status:
+          type: string
+          description: Thermal safety status of the smart-plug during the reading, based on MCU/SoC temperature thresholds
+          enum:
+            - NOT_AVAILABLE
+            - NORMAL
+            - WARNING
+            - CRITICAL
+          example: 'NORMAL'
+        reading_timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the reading was taken
+          example: '2025-01-13T12:34:59Z'
+        batch_timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the batch was sent
+          example: '2025-01-13T12:34:59Z'
+        batch_trace_id:
+          type: string
+          format: uuid
+          description: Unique identifier assigned by edge service to the batch of readings
+          example: '3d1187fe-dc05-4c28-b44e-16d18a74244a'
+  
+  parameters:
+    StartTimestamp:
+      name: start_timestamp
+      in: query
+      description: Start of the timespan, as an ISO 8601 timestamp
+      schema:
+        type: string
+        format: date-time
+        example: '2025-01-13T12:34:59Z'
+    
+    EndTimestamp:
+      name: end_timestamp
+      in: query
+      description: End of the timespan, as an ISO 8601 timestamp
+      schema:
+        type: string
+        format: date-time
+        example: '2025-01-14T12:34:59Z'
