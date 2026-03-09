@@ -1,0 +1,61 @@
+services:
+  receiver_svc:
+    build:
+      context: ./receiver
+      additional_contexts:
+        shared: ./_common
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+  
+  storage_svc:
+    build:
+      context: ./storage
+      additional_contexts:
+        shared: ./_common
+    expose:
+      - "8090"
+    depends_on:
+      - storage_db
+      - kafka
+  
+  processor_svc:
+    build:
+      context: ./processor
+      additional_contexts:
+        shared: ./_common
+    ports:
+      - "8100:8100"
+    depends_on:
+      - storage_svc
+  
+  analyzer_svc:
+    build:
+      context: ./analyzer
+      additional_contexts:
+        shared: ./_common
+    ports:
+      - "8110:8110"
+    depends_on:
+      - kafka
+
+  storage_db:
+    image: mysql:9.6
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
+      MYSQL_USER: storage_service
+      MYSQL_PASSWORD: $$torage_5ervice
+      MYSQL_DATABASE: readings
+    expose:
+      - "3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+  
+  kafka:
+    image: apache/kafka:4.2
+    expose:
+      - "9092"
+  
+volumes:
+  mysql_data:
