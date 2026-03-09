@@ -4,6 +4,11 @@
 logs/
 data/
 
+## Config files
+### Ignore all config files, but keep defaults
+*/config/*.yml
+!*/config/default.*.yml
+
 ## Python Stuff
 __pycache__/
 *.pyc
