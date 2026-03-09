@@ -7,8 +7,9 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - kafka
-  
+      kafka:
+        condition: service_healthy
+
   storage_svc:
     build:
       context: ./storage
@@ -17,9 +18,11 @@ services:
     expose:
       - "8090"
     depends_on:
-      - storage_db
-      - kafka
-  
+      storage_db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
   processor_svc:
     build:
       context: ./processor
@@ -29,7 +32,7 @@ services:
       - "8100:8100"
     depends_on:
       - storage_svc
-  
+
   analyzer_svc:
     build:
       context: ./analyzer
@@ -38,7 +41,8 @@ services:
     ports:
       - "8110:8110"
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
 
   storage_db:
     image: mysql:9.6
@@ -51,11 +55,21 @@ services:
       - "3306"
     volumes:
       - mysql_data:/var/lib/mysql
-  
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   kafka:
     image: apache/kafka:4.2.0
     expose:
       - "9092"
-  
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-topics.sh", "--list", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   mysql_data:
