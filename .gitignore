@@ -1,0 +1,20 @@
+# Unified .gitignore for all services
+
+## Service utility directories
+logs/
+data/
+
+## Python Stuff
+__pycache__/
+*.pyc
+
+## Venvs
+venv/
+.venv/
+_venv/
+
+## OS stuff
+__MACOSX/
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
