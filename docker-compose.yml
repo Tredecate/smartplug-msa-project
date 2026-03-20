@@ -6,6 +6,9 @@ services:
         shared: ./_common
     ports:
       - "8080:8080"
+    volumes:
+      - ./config:/config:ro
+      - ./logs:/logs
     depends_on:
       kafka:
         condition: service_healthy
@@ -17,6 +20,9 @@ services:
         shared: ./_common
     expose:
       - "8090"
+    volumes:
+      - ./config:/config:ro
+      - ./logs:/logs
     depends_on:
       storage_db:
         condition: service_healthy
@@ -30,6 +36,10 @@ services:
         shared: ./_common
     ports:
       - "8100:8100"
+    volumes:
+      - ./config:/config:ro
+      - ./logs:/logs
+      - ./data/processor:/data
     depends_on:
       - storage_svc
 
@@ -40,6 +50,9 @@ services:
         shared: ./_common
     ports:
       - "8110:8110"
+    volumes:
+      - ./config:/config:ro
+      - ./logs:/logs
     depends_on:
       kafka:
         condition: service_healthy
