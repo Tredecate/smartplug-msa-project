@@ -37,14 +37,14 @@ except FileNotFoundError:
 # LOAD CONFIGURATION
 # App config
 try:
-    with open(Path("./config/app_conf.yml"), 'r') as f:
+    with open(Path("/config/processor_app_conf.yml"), 'r') as f:
         file_config = yaml.safe_load(f)
 except FileNotFoundError:
     file_config = {}
 
 # Log config
 try:
-    with open(Path("./config/log_conf.yml"), 'r') as f:
+    with open(Path("/config/processor_log_conf.yml"), 'r') as f:
         file_log_config = yaml.safe_load(f)
 except FileNotFoundError:
     file_log_config = {}

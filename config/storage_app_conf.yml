@@ -1,0 +1,22 @@
+version: 1
+api:
+  file: openapi.yml
+  spec_dir: "./"
+  strict_validation: true
+  validate_responses: true
+services:
+  self:
+    host: 0.0.0.0
+    port: 8090
+    auto_create_tables: true
+    db:
+      protocol: mysql
+      username: storage_service
+      password: $torage_5ervice
+      host: storage_db
+      database: readings
+  broker:
+    host: kafka
+    port: 9092
+    topic: events
+    group_id: storage_service_group
