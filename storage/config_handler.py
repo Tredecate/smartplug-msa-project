@@ -21,14 +21,14 @@ def overlay_dicts(base: dict, overlay: dict) -> dict:
 # LOAD DEFAULTS
 # App config
 try:
-    with open(Path("./config/default.app_conf.yml"), 'r') as f:
+    with open(Path("./default.config/default.storage_app_conf.yml"), 'r') as f:
         default_app_config = yaml.safe_load(f)
 except FileNotFoundError:
     default_app_config = {}
 
 # Log config
 try:
-    with open(Path("./config/default.log_conf.yml"), 'r') as f:
+    with open(Path("./default.config/default.storage_log_conf.yml"), 'r') as f:
         default_log_config = yaml.safe_load(f)
 except FileNotFoundError:
     default_log_config = {}
