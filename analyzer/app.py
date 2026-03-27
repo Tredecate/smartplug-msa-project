@@ -2,7 +2,8 @@ import logging.config
 import connexion
 import json
 
-from kafka import KafkaConsumer
+from threading import Thread
+from kafka import KafkaConsumer, TopicPartition
 from connexion import NoContent
 from pathlib import Path
 from connexion.middleware import MiddlewarePosition
@@ -80,17 +81,36 @@ def count_events() -> dict:
     return counts
 
 
-def get_consumer() -> KafkaConsumer:
-    consumer = KafkaConsumer(
-        BROKER_CONFIG["topic"],
-        bootstrap_servers=f"{BROKER_CONFIG['host']}:{BROKER_CONFIG['port']}",
-        #group_id=BROKER_CONFIG["group_id"],
-        auto_offset_reset="earliest",
-        consumer_timeout_ms = 1000
-    )
+def consume_all_messages():
+    logger.debug("Starting broker consumer thread...")
 
-    logger.debug(f"Connected to broker at {BROKER_CONFIG['host']}:{BROKER_CONFIG['port']}, subscribed to topic '{BROKER_CONFIG['topic']}'")
-    return consumer
+    # connect to the broker
+    consumer = KafkaConsumer(
+        bootstrap_servers=f"{BROKER_CONFIG['host']}:{BROKER_CONFIG['port']}",
+        auto_offset_reset="earliest",
+    )
+    logger.info(f"Connected to broker at {BROKER_CONFIG['host']}:{BROKER_CONFIG['port']}")
+
+    # get all partition ids
+    partition_ids = consumer.partitions_for_topic(BROKER_CONFIG["topic"])
+    logger.debug(f"Fetched partition ids for topic '{BROKER_CONFIG['topic']}': {partition_ids}")
+
+    # subscribe to all partitions and seek to beginning
+    consumer.assign([TopicPartition(BROKER_CONFIG["topic"], p) for p in partition_ids])
+    consumer.seek_to_beginning()
+    logger.info(f"Subscribed to all {len(partition_ids)} partitions for topic '{BROKER_CONFIG['topic']}'")
+    
+    # c o n s u m e
+    for msg in consumer:
+        message_str = msg.value.decode("utf-8")
+        message = json.loads(message_str)
+
+        logger.debug(f"Received message from broker: {message}")
+
+        if message["type"] in MESSAGES:
+            MESSAGES[message["type"]].append(message)
+        else:
+            MESSAGES[message["type"]] = [message]
 
 
 ##### INIT #####
@@ -115,4 +135,7 @@ app.add_middleware(
 
 
 if __name__ == "__main__":
+    consumer_thread = Thread(target=consume_all_messages, daemon=True)
+    consumer_thread.start()
+
     app.run(port=APP_CONFIG["port"], host=APP_CONFIG["host"])
