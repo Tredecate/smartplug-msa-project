@@ -5,6 +5,8 @@ import connexion
 
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
+from connexion.middleware import MiddlewarePosition
+from starlette.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 from config_handler import APP_CONFIG, API_CONFIG, STORAGE_CONFIG, LOG_CONFIG
 
@@ -185,10 +187,19 @@ logger = logging.getLogger("basicLogger")
 
 
 app = connexion.FlaskApp(__name__, specification_dir=API_CONFIG["spec_dir"])
+
 app.add_api(API_CONFIG["file"], 
             strict_validation=API_CONFIG["strict_validation"], 
             validate_responses=API_CONFIG["validate_responses"])
 
+app.add_middleware(
+    CORSMiddleware,
+    position=MiddlewarePosition.BEFORE_EXCEPTION,
+    allow_origins=API_CONFIG["cors"]["allow_origins"],
+    allow_methods=API_CONFIG["cors"]["allow_methods"],
+    allow_headers=API_CONFIG["cors"]["allow_headers"],
+    allow_credentials=True,
+)
 
 if __name__ == "__main__":
     init_scheduler()

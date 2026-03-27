@@ -4,6 +4,10 @@ api:
   spec_dir: "./"
   strict_validation: true
   validate_responses: true
+  cors:
+    allow_origins: ["*"]
+    allow_methods: ["*"]
+    allow_headers: ["*"]
 services:
   self:
     host: 0.0.0.0
