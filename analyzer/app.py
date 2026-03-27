@@ -11,6 +11,10 @@ from starlette.middleware.cors import CORSMiddleware
 from config_handler import APP_CONFIG, API_CONFIG, BROKER_CONFIG, LOG_CONFIG
 
 
+##### MESSAGE CACHE #####
+MESSAGES = {}
+
+
 ##### ENDPOINTS #####
 def get_energy_event(index: int):
     logger.debug(f"Received request for energy event at index {index}")
@@ -49,47 +53,30 @@ def get_stats():
 
 ##### UTILS #####
 def seek_for_event(event_type: str, index: int) -> dict | None:
-    logger.debug(f"Starting broker seeking for event type '{event_type}' at index {index}")
+    logger.debug(f"Checking message cache for event type '{event_type}' at index {index}")
 
-    # init
-    consumer = get_consumer()
-    index_counter = -1
+    # grab the cache list for this event type, or an empty list if it doesn't exist
+    event_cache = MESSAGES.get(event_type, [])
 
-    # get messages
-    for msg in consumer:
-        message_str = msg.value.decode("utf-8")
-        message = json.loads(message_str)
+    try:
+        # try to grab the requested message
+        message = event_cache[index]
+        logger.info(f"Found event index {index} for event '{event_type}' in message cache.")
 
-        # count if message is right type
-        if message["type"] == event_type:
-            index_counter += 1
-
-            # return if target index is hit
-            if index_counter == index:
-                logger.info(f"Found event index {index} for event '{event_type}' in Kafka.")
-                return message
-    
-    # give up
-    logger.warning(f"Couldn't find event index {index} for event '{event_type}' in Kafka. Max index for this event type is {index_counter}")
-    return None
+        # return it
+        return message
+    except IndexError:
+        logger.warning(f"Couldn't find event index {index} for event '{event_type}' in message cache. Max index for this event type is {len(event_cache) - 1}.")
+        return None
 
 
 def count_events() -> dict:
-    logger.debug("Starting event counting")
-
-    # init
-    consumer = get_consumer()
-    counts = {}
-
-    # get messages
-    for msg in consumer:
-        message_str = msg.value.decode("utf-8")
-        message = json.loads(message_str)
-
-        # increment count for this message type
-        counts[message["type"]] = counts.get(message["type"], 0) + 1
+    counts = {
+        "energy_consumption": len(MESSAGES.get("energy_consumption", [])),
+        "internal_temperature": len(MESSAGES.get("internal_temperature", []))
+    }
     
-    logger.info(f"Finished counting events in Kafka. Counts: {counts}")
+    logger.info(f"Returned event counts from Kafka message cache. Counts: {counts}")
     return counts
 
 
