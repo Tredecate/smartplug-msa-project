@@ -74,6 +74,7 @@ components:
     EventIndex:
       name: index
       in: query
+      required: true
       description: The index of the event to fetch
       schema:
         type: integer
