@@ -1,13 +1,13 @@
-import logging.config
-import connexion
 import json
-
+import logging.config
 from threading import Thread
-from kafka import KafkaConsumer, TopicPartition
-from connexion import NoContent
 from pathlib import Path
+
+import connexion
+from connexion import NoContent
 from connexion.middleware import MiddlewarePosition
 from starlette.middleware.cors import CORSMiddleware
+from kafka import KafkaConsumer, TopicPartition
 
 from config_handler import APP_CONFIG, API_CONFIG, BROKER_CONFIG, LOG_CONFIG
 
