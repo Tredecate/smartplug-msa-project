@@ -1,7 +1,9 @@
 /* UPDATE THESE VALUES TO MATCH YOUR SETUP */
 const BASE_DOMAIN = window.location.hostname || "localhost"
 
-const REFRESH_RATE_MS = 4000
+let REFRESH_RATE_MS = 2000
+let statsIntervalId = null
+let refreshRateDebounceId = null
 const PROCESSOR_BASE_URL = `http://${BASE_DOMAIN}:8100`
 const ANALYZER_BASE_URL = `http://${BASE_DOMAIN}:8110`
 
@@ -34,6 +36,23 @@ const objectToHTML = (obj) => Object.entries(obj).map(([key, value]) => `<p><str
 
 const getLocaleDateStr = () => (new Date()).toLocaleString()
 
+const updateRefreshRate = () => {
+    const refreshInput = document.getElementById("refresh-rate-ms")
+    if (!refreshInput) {
+        return
+    }
+
+    const nextRate = Number.parseInt(refreshInput.value, 10)
+    if (!Number.isFinite(nextRate) || nextRate < 250) {
+        updateErrorMessages("Refresh rate must be a number above 250 in milliseconds.")
+        refreshInput.value = String(REFRESH_RATE_MS)
+        return
+    }
+
+    REFRESH_RATE_MS = nextRate
+    setup()
+}
+
 const getStats = () => {
     document.getElementById("last-updated-value").innerText = getLocaleDateStr()
     
@@ -49,7 +68,7 @@ const getEvents = () => {
 const updateErrorMessages = (message) => {
     const id = Date.now()
     console.log("Creation", id)
-    msg = document.createElement("div")
+    let msg = document.createElement("div")
     msg.id = `error-${id}`
     msg.innerHTML = `<p>Something happened at ${getLocaleDateStr()}!</p><code>${message}</code>`
     document.getElementById("messages").style.display = "block"
@@ -57,12 +76,39 @@ const updateErrorMessages = (message) => {
     setTimeout(() => {
         const elem = document.getElementById(`error-${id}`)
         if (elem) { elem.remove() }
-    }, REFRESH_RATE_MS - 1000)
+    }, 5000)
+}
+
+const wireRefreshRateControls = () => {
+    const refreshInput = document.getElementById("refresh-rate-ms")
+
+    if (!refreshInput) {
+        return
+    }
+
+    refreshInput.value = String(REFRESH_RATE_MS)
+    refreshInput.addEventListener("input", () => {
+        if (refreshRateDebounceId) {
+            clearTimeout(refreshRateDebounceId)
+        }
+
+        refreshRateDebounceId = setTimeout(() => {
+            updateRefreshRate()
+            refreshRateDebounceId = null
+        }, 1000)
+    })
 }
 
 const setup = () => {
+    if (statsIntervalId) {
+        clearInterval(statsIntervalId)
+    }
+
     getStats()
-    setInterval(() => getStats(), REFRESH_RATE_MS) // Update every 4 seconds
+    statsIntervalId = setInterval(() => getStats(), REFRESH_RATE_MS)
 }
 
-document.addEventListener('DOMContentLoaded', setup)
+document.addEventListener("DOMContentLoaded", () => {
+    wireRefreshRateControls()
+    setup()
+})
