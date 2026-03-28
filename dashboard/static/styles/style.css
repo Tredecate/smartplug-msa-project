@@ -17,8 +17,9 @@ body {
     justify-content: center;
     gap: 1em;
     img {
-        height: 10em;
+        height: 5em;
         width: auto;
+        margin: 1em;
     }
 }
 
