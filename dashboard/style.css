@@ -32,7 +32,7 @@ code:not(#messages *) {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: left;
 }
 
 code > p {
@@ -72,8 +72,8 @@ code > p {
 }
 
 #messages > div {
-    background-color: #ccc;
-    border: 1px solid orange;
+    background-color: rgba(204, 204, 204, 0.7);
+    border: 1px solid rgb(255, 72, 0);
     padding: 0em;
     padding-bottom: 0.5em;
 }

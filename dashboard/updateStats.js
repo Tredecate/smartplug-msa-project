@@ -1,8 +1,9 @@
 /* UPDATE THESE VALUES TO MATCH YOUR SETUP */
+const BASE_DOMAIN = window.location.hostname || "localhost"
 
 const REFRESH_RATE_MS = 4000
-const PROCESSOR_BASE_URL = "http://localhost:8100"
-const ANALYZER_BASE_URL = "http://localhost:8110"
+const PROCESSOR_BASE_URL = `http://${BASE_DOMAIN}:8100`
+const ANALYZER_BASE_URL = `http://${BASE_DOMAIN}:8110`
 
 const PROCESSING_STATS_API_URL = PROCESSOR_BASE_URL + "/stats"
 const ANALYZER_API_URL = {
@@ -29,7 +30,7 @@ const makeReq = (url, cb) => {
 const updateCodeDiv = (result, elemId) => document.getElementById(elemId).innerHTML = objectToHTML(result)
 
 // aight, i'll match your freak. one-liner to convert an object to an HTML list. don't @ me
-const objectToHTML = (obj) => Object.entries(obj).map(([key, value]) => `<p><strong>${key}:</strong><br>${JSON.stringify(value)}</p>`).join("")
+const objectToHTML = (obj) => Object.entries(obj).map(([key, value]) => `<p><strong>${key}:</strong><br>${value}</p>`).join("")
 
 const getLocaleDateStr = () => (new Date()).toLocaleString()
 
