@@ -10,11 +10,13 @@ from connexion.middleware import MiddlewarePosition
 from starlette.middleware.cors import CORSMiddleware
 from kafka import KafkaConsumer, TopicPartition
 
+import message_cache
 from config_handler import APP_CONFIG, API_CONFIG, BROKER_CONFIG, LOG_CONFIG
 
 
 ##### MESSAGE CACHE #####
-MESSAGES = {}
+# Importing from message_cache module so that it's shared across all threads and functions in this app
+MESSAGES = message_cache.MESSAGES
 
 
 ##### ENDPOINTS #####
