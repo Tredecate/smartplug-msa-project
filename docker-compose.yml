@@ -1,4 +1,10 @@
 services:
+  dashboard_server:
+    build:
+      context: ./dashboard
+    ports:
+      - "8000:80"
+
   receiver_svc:
     build:
       context: ./receiver
