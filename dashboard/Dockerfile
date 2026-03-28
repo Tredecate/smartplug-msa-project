@@ -1,4 +1,4 @@
 FROM nginx:alpine
 LABEL maintainer="tdezwart@my.bcit.ca"
 
-COPY . /usr/share/nginx/html
+COPY static/ /usr/share/nginx/html
