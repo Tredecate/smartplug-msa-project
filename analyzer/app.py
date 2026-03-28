@@ -2,6 +2,7 @@ import json
 import logging.config
 from threading import Thread
 from pathlib import Path
+from time import sleep
 
 import connexion
 from connexion import NoContent
@@ -89,15 +90,25 @@ def consume_all_messages():
         bootstrap_servers=f"{BROKER_CONFIG['host']}:{BROKER_CONFIG['port']}",
         auto_offset_reset="earliest",
     )
+
     logger.info(f"Connected to broker at {BROKER_CONFIG['host']}:{BROKER_CONFIG['port']}")
 
     # get all partition ids
-    partition_ids = consumer.partitions_for_topic(BROKER_CONFIG["topic"])
+    partition_ids = consumer.partitions_for_topic(BROKER_CONFIG["topic"]) or None
+
+    while not partition_ids:
+        if partition_ids is None:
+            logger.warning(f"Topic '{BROKER_CONFIG['topic']}' does not exist on broker. Retrying every 5 seconds...")
+        
+        sleep(5)
+        partition_ids = consumer.partitions_for_topic(BROKER_CONFIG["topic"])
+    
     logger.debug(f"Fetched partition ids for topic '{BROKER_CONFIG['topic']}': {partition_ids}")
 
     # subscribe to all partitions and seek to beginning
-    consumer.assign([TopicPartition(BROKER_CONFIG["topic"], p) for p in partition_ids])
+    consumer.assign([TopicPartition(BROKER_CONFIG["topic"], part_id) for part_id in partition_ids])
     consumer.seek_to_beginning()
+
     logger.info(f"Subscribed to all {len(partition_ids)} partitions for topic '{BROKER_CONFIG['topic']}'")
     
     # c o n s u m e
