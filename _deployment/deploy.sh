@@ -13,6 +13,18 @@ else
     auto=false
 fi
 
+# Function to get yes/no response
+function get_yes_no() {
+    printf "$1: " >&2
+    if [[ "$auto" == true ]]; then
+        echo "y (auto)" >&2
+        echo "y"
+    else
+        read response
+        echo "${response:-y}"
+    fi
+}
+
 # Function to get confirmation to continue
 function get_confirmation() {
     printf "Press enter to continue with $1... " >&2
@@ -33,17 +45,20 @@ key_path="./.key_files/smartplug-msa-key"
 
 # If no key exists at default path, ask user if they want to generate one
 if [[ ! -f "$key_path" ]]; then
-    echo "No SSH key found for this deployment. Would you like to generate one? (y/n)"
-    read response
-    if [[ "$response" == "y" ]]; then
+    echo "No SSH key found for this deployment. Would you like to generate one?"
+    response=$(get_yes_no "Generate SSH key? (Y/n)")
+
     # If user wants to generate a key, create it
+    if [[ "$response" =~ ^[Yy]$ ]]; then
         ssh-keygen -q -t ed25519 -f "$key_path" -N "" -C "ec2-user key for $(basename "$(dirname "$(pwd)")") terraform deployment" && \
         echo "SSH key generated successfully at $key_path."
 
     else # If user doesn't want to generate a key, ask if they want to use an existing key
-        echo "SSH key is required for deployment. Would you like to provide an existing key path? (y/n)"
+        echo "SSH key is required for deployment. Would you like to provide an existing key path?"
+        provide_key=$(get_yes_no "Provide existing SSH key? (Y/n)")
+
         # If user wants to use an existing key, ask for the path and validate it
-        if [[ "$provide_key" == "y" ]]; then
+        if [[ "$provide_key" =~ ^[Yy]$ ]]; then
             echo "Please enter the path to your existing SSH private key."
             read -p "Existing SSH key path: " -i "~/.ssh/" -e existing_key_path
             existing_key_path="${existing_key_path/#\~/$HOME}"
