@@ -8,7 +8,7 @@ terraform {
 }
 
 variable "ssh_key_path" {
-    default = "../keys/smartplug-msa-key"
+    default = "../.key_files/smartplug-msa-key"
 }
 
 provider "aws" {
@@ -94,7 +94,7 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_outbound" {
 
 resource "aws_key_pair" "temp_msa_key" {
   key_name   = "temp-msa-key"
-  public_key = file("${var.ssh_key_path}.pub")
+  public_key = fileexists("${var.ssh_key_path}.pub") ? file("${var.ssh_key_path}.pub") : null
 }
 
 resource "aws_instance" "smartplug_msa" {
