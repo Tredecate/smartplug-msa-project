@@ -1,6 +1,28 @@
 #!/bin/bash
 set -e
 
+#################
+##### UTILS #####
+#################
+
+# Check for auto mode
+if [[ "$1" == "--auto" || "$1" == "-y" ]]; then
+    echo "Auto mode enabled. Generating SSH key and skipping prompts."
+    auto=true
+else
+    auto=false
+fi
+
+# Function to get confirmation to continue
+function get_confirmation() {
+    printf "Press enter to continue with $1... " >&2
+    if [[ "$auto" == true ]]; then
+        echo "(auto)"
+    else
+        read
+    fi
+}
+
 
 #####################
 ### SSH KEY SETUP ###
@@ -18,12 +40,12 @@ if [[ ! -f "$key_path" ]]; then
         ssh-keygen -q -t ed25519 -f "$key_path" -N "" -C "ec2-user key for $(basename "$(dirname "$(pwd)")") terraform deployment" && \
         echo "SSH key generated successfully at $key_path."
 
-    else
+    else # If user doesn't want to generate a key, ask if they want to use an existing key
         echo "SSH key is required for deployment. Would you like to provide an existing key path? (y/n)"
-        read provide_key
+        # If user wants to use an existing key, ask for the path and validate it
         if [[ "$provide_key" == "y" ]]; then
-            echo "Please enter the path to your existing SSH private key:"
-            read -e existing_key_path
+            echo "Please enter the path to your existing SSH private key."
+            read -p "Existing SSH key path: " -i "~/.ssh/" -e existing_key_path
             existing_key_path="${existing_key_path/#\~/$HOME}"
 
             # If the user's key exists, use it
@@ -55,6 +77,10 @@ echo "SSH key path saved."
 ### TERRAFORM DEPLOYMENT ###
 ############################
 
+# Wait for confirmation to continue
+get_confirmation "Terraform deployment"
+echo "Continuing with Terraform deployment..."
+
 # Run Terraform stuff
 cd terraform
 terraform init
@@ -69,6 +95,10 @@ echo "Terraform deployment complete."
 ############################
 ### ANSIBLE PROVISIONING ###
 ############################
+
+# Wait for confirmation to continue
+get_confirmation "Ansible provisioning"
+echo "Continuing with Ansible provisioning..."
 
 # Run Ansible playbook
 cd ../ansible
