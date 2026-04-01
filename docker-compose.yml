@@ -13,8 +13,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./config:/config:ro
-      - ./logs:/logs
+      - ./_mounts/config:/config:ro
+      - ./_mounts/logs:/logs
     depends_on:
       kafka:
         condition: service_healthy
@@ -27,8 +27,8 @@ services:
     expose:
       - "8090"
     volumes:
-      - ./config:/config:ro
-      - ./logs:/logs
+      - ./_mounts/config:/config:ro
+      - ./_mounts/logs:/logs
     depends_on:
       storage_db:
         condition: service_healthy
@@ -43,9 +43,9 @@ services:
     ports:
       - "8100:8100"
     volumes:
-      - ./config:/config:ro
-      - ./logs:/logs
-      - ./data/processor:/data
+      - ./_mounts/config:/config:ro
+      - ./_mounts/logs:/logs
+      - ./_mounts/data/processor:/data
     depends_on:
       - storage_svc
 
@@ -57,8 +57,8 @@ services:
     ports:
       - "8110:8110"
     volumes:
-      - ./config:/config:ro
-      - ./logs:/logs
+      - ./_mounts/config:/config:ro
+      - ./_mounts/logs:/logs
     depends_on:
       kafka:
         condition: service_healthy
