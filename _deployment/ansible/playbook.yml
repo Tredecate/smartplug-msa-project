@@ -1,21 +1,22 @@
-- name: wait for server to be ready
+---
+- name: Wait for server to be ready
   hosts: all
   remote_user: ec2-user
   gather_facts: false
   tasks:
-    - name: wait for SSH to be available
+    - name: Wait for SSH to be available
       ansible.builtin.wait_for_connection:
         delay: 5
         sleep: 5
         timeout: 60
 
-- name: install prerequisites
+- name: Install prerequisites
   hosts: all
   remote_user: ec2-user
   become: true
   gather_facts: true
   tasks:
-    - name: add docker repository
+    - name: Add docker repository
       ansible.builtin.yum_repository:
         name: docker-ce-stable
         description: Docker CE Stable - $basearch
@@ -23,37 +24,38 @@
         gpgcheck: true
         enabled: true
         gpgkey: https://download.docker.com/linux/centos/gpg
-    - name: install git
+    - name: Install git
       ansible.builtin.dnf:
         name: git
         state: present
         update_cache: true
-    - name: install docker
+    - name: Install docker
       ansible.builtin.dnf:
         name:
-        - docker-ce
-        - docker-ce-cli
-        - containerd.io
-        - docker-buildx-plugin
-        - docker-compose-plugin
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
         state: present
         update_cache: true
-    - name: enable docker
+    - name: Enable docker
       ansible.builtin.systemd:
         name: docker
         enabled: true
         state: started
 
-- name: git clone project and run docker compose
+- name: Clone project and run docker compose
   hosts: all
   remote_user: ec2-user
   gather_facts: true
   tasks:
-    - name: clone project repository
+    - name: Clone project repository
       ansible.builtin.git:
         repo: "https://github.com/Tredecate/smartplug-msa-project.git"
         dest: "/home/ec2-user/smartplug-msa-project"
-    - name: run docker compose
+        version: "main"  # noqa: latest
+    - name: Run docker compose
       become: true
       community.docker.docker_compose_v2:
         project_src: "/home/ec2-user/smartplug-msa-project"

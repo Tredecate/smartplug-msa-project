@@ -8,7 +8,7 @@ terraform {
 }
 
 variable "ssh_key_path" {
-    default = "../.key_files/smartplug-msa-key"
+  default = "../.key_files/smartplug-msa-key"
 }
 
 provider "aws" {
@@ -29,9 +29,9 @@ data "aws_vpc" "default" {
 }
 
 data "aws_subnet" "default" {
-    vpc_id = data.aws_vpc.default.id
-    default_for_az = true
-    availability_zone = "us-west-2a"
+  vpc_id            = data.aws_vpc.default.id
+  default_for_az    = true
+  availability_zone = "us-west-2a"
 }
 
 resource "aws_security_group" "allow_ports" {
