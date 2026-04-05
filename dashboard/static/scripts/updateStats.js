@@ -1,12 +1,19 @@
-/* UPDATE THESE VALUES TO MATCH YOUR SETUP */
+// This file largely provided by course material.
+// Don't judge me for the spaghetti.
 const BASE_DOMAIN = window.location.hostname || "localhost"
 
+// ####################
+// ###### CONFIG ######
+// ####################
+
+// INTERVALS
 let REFRESH_RATE_MS = 2000
-let statsIntervalId = null
-let refreshRateDebounceId = null
+
+// BASE URLS
 const PROCESSOR_BASE_URL = `http://${BASE_DOMAIN}:8100`
 const ANALYZER_BASE_URL = `http://${BASE_DOMAIN}:8110`
 
+// API ENDPOINTS
 const PROCESSING_STATS_API_URL = PROCESSOR_BASE_URL + "/stats"
 const ANALYZER_API_URL = {
     stats: ANALYZER_BASE_URL + "/stats",
@@ -14,9 +21,29 @@ const ANALYZER_API_URL = {
     temperature: ANALYZER_BASE_URL + "/temperature-event?index=-1"
 }
 
+// ########################
+// ###### END CONFIG ######
+// ########################
+
+let statsIntervalId = null
+let refreshRateDebounceId = null
 let latest_analyzer_stats = {}
 
-// This function fetches and updates the general statistics
+// This function fetches the latest stats from the processor and analyzer and updates the corresponding divs
+const getStats = () => {
+    document.getElementById("last-updated-value").innerText = getLocaleDateStr()
+    
+    makeReq(PROCESSING_STATS_API_URL, (result) => updateCodeDiv(result, "processing-stats"))
+    makeReq(ANALYZER_API_URL.stats, (result) => updateCodeDiv(result, "analyzer-stats") && (latest_analyzer_stats = result) && getEvents())
+}
+
+// This function fetches the most recent events from the analyzer (from the kafka topic) and updates the corresponding divs
+const getEvents = () => {
+    latest_analyzer_stats["num_energy_events"] ? makeReq(ANALYZER_API_URL.energy, (result) => updateCodeDiv(result, "event-energy")) : null
+    latest_analyzer_stats["num_temperature_events"] ? makeReq(ANALYZER_API_URL.temperature, (result) => updateCodeDiv(result, "event-temperature")) : null
+}
+
+// This function makes a GET request to the provided URL
 const makeReq = (url, cb) => {
     fetch(url)
         .then(res => res.json())
@@ -29,13 +56,16 @@ const makeReq = (url, cb) => {
         })
 }
 
+// This function updates the target div with the provided content
 const updateCodeDiv = (result, elemId) => document.getElementById(elemId).innerHTML = objectToHTML(result)
 
-// aight, i'll match your freak. one-liner to convert an object to an HTML list. don't @ me
+// aight, i'll match your freak, mr. instructor. one-liner to convert an object to an HTML list. don't @ me
 const objectToHTML = (obj) => Object.entries(obj).map(([key, value]) => `<p><strong>${key}:</strong><br>${value}</p>`).join("")
 
+// This function returns the current date and time in a locale-specific string format
 const getLocaleDateStr = () => (new Date()).toLocaleString()
 
+// This function updates the stat polling refresh rate based on user input
 const updateRefreshRate = () => {
     const refreshInput = document.getElementById("refresh-rate-ms")
     if (!refreshInput) {
@@ -53,18 +83,7 @@ const updateRefreshRate = () => {
     setup()
 }
 
-const getStats = () => {
-    document.getElementById("last-updated-value").innerText = getLocaleDateStr()
-    
-    makeReq(PROCESSING_STATS_API_URL, (result) => updateCodeDiv(result, "processing-stats"))
-    makeReq(ANALYZER_API_URL.stats, (result) => updateCodeDiv(result, "analyzer-stats") && (latest_analyzer_stats = result) && getEvents())
-}
-
-const getEvents = () => {
-    latest_analyzer_stats["num_energy_events"] ? makeReq(ANALYZER_API_URL.energy, (result) => updateCodeDiv(result, "event-energy")) : null
-    latest_analyzer_stats["num_temperature_events"] ? makeReq(ANALYZER_API_URL.temperature, (result) => updateCodeDiv(result, "event-temperature")) : null
-}
-
+// This function creates an ephemeral error message div that disappears after 5 seconds
 const updateErrorMessages = (message) => {
     const id = Date.now()
     console.log("Creation", id)
@@ -79,6 +98,7 @@ const updateErrorMessages = (message) => {
     }, 5000)
 }
 
+// This function wires up the refresh rate input to allow the user to change the stat polling refresh rate
 const wireRefreshRateControls = () => {
     const refreshInput = document.getElementById("refresh-rate-ms")
 
@@ -99,15 +119,18 @@ const wireRefreshRateControls = () => {
     })
 }
 
+// This function sets up the initial stat and health polling intervals
 const setup = () => {
     if (statsIntervalId) {
         clearInterval(statsIntervalId)
     }
 
+    // Stats update
     getStats()
     statsIntervalId = setInterval(() => getStats(), REFRESH_RATE_MS)
 }
 
+// On your page load, get set, go!
 document.addEventListener("DOMContentLoaded", () => {
     wireRefreshRateControls()
     setup()
