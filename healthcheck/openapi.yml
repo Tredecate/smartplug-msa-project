@@ -1,0 +1,60 @@
+openapi: '3.0.0'
+info:
+  description: This API summarizes the health status of various services.
+  version: '1.0.0'
+  title: Smart-plug Service Status API
+  contact:
+    email: 'tdezwart@my.bcit.ca'
+
+paths:
+  /health:
+    get:
+      summary: Returns 200 OK
+      description: A simple endpoint to check if the API is running at all
+      operationId: app.health
+      responses:
+        '200':
+          description: API is alive and running
+
+  /status:
+    get:
+      summary: Gets health statuses for various services
+      operationId: app.get_statuses
+      description: Returns recent recorded health statuses for various services
+      responses:
+        '200':
+          description: Recent health statuses successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatuses'
+        '404':
+          description: Health statuses do not exist or are not yet recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Health statuses not yet recorded"
+
+components:
+  schemas:
+    HealthStatuses:
+      type: object
+      required:
+      - health_statuses
+      - last_update
+      properties:
+        health_statuses:
+          type: object
+          example:
+            receiver_status: "Up"
+            storage_status: "Up"
+            processor_status: "Up"
+            analyzer_status: "Down"
+        last_update:
+          type: string
+          format: date-time
+          example: "2023-10-01T12:00:00Z"

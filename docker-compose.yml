@@ -63,6 +63,18 @@ services:
       kafka:
         condition: service_healthy
 
+  healthcheck_svc:
+    build:
+      context: ./healthcheck
+      additional_contexts:
+        shared: ./_common
+    ports:
+      - "8120:8120"
+    volumes:
+      - ./_mounts/config:/config:ro
+      - ./_mounts/logs:/logs
+      - ./_mounts/data/healthcheck:/data
+
   storage_db:
     image: mysql:9.6
     environment:
