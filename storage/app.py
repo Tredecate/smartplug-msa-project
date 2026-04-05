@@ -5,6 +5,7 @@ import logging.config
 from datetime import datetime
 from kafka import KafkaConsumer
 from threading import Thread
+from connexion import NoContent
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session as _Type_SQLAlchemySession
@@ -38,6 +39,11 @@ def consume_broker_messages():
             store_internal_temp_reading(body=payload)
         else:
             logger.warning(f"Consumed message with unknown type '{message['type']}': {message}")
+
+
+def health():
+    logger.debug("Received health check request")
+    return (connexion.NoContent, 200)
 
 
 @use_db_session

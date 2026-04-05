@@ -9,6 +9,11 @@ from connexion import NoContent
 from config_handler import APP_CONFIG, BROKER_CONFIG, API_CONFIG, LOG_CONFIG
 
 
+def health():
+    logger.debug("Received health check request")
+    return (NoContent, 200)
+
+
 async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
     # INIT
     plug_data = {

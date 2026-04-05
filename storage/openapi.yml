@@ -7,6 +7,15 @@ info:
     email: 'tdezwart@my.bcit.ca'
 
 paths:
+  /health:
+    get:
+      summary: Returns 200 OK
+      description: A simple endpoint to check if the API is running at all
+      operationId: app.health
+      responses:
+        '200':
+          description: API is alive and running
+
   /plug-data/energy-consumed:
     get:
       summary: Retrieves energy consumption readings

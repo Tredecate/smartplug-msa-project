@@ -4,6 +4,7 @@ import logging.config
 import connexion
 
 from pathlib import Path
+from connexion import NoContent
 from datetime import datetime, timezone, timedelta
 from connexion.middleware import MiddlewarePosition
 from starlette.middleware.cors import CORSMiddleware
@@ -12,6 +13,11 @@ from config_handler import APP_CONFIG, API_CONFIG, STORAGE_CONFIG, LOG_CONFIG
 
 
 ##### ENDPOINTS #####
+def health():
+    logger.debug("Received health check request")
+    return (NoContent, 200)
+
+
 def get_stats():
     logger.info("GET /stats request received")
 

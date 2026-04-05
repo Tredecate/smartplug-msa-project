@@ -20,6 +20,11 @@ MESSAGES = message_cache.MESSAGES
 
 
 ##### ENDPOINTS #####
+def health():
+    logger.debug("Received health check request")
+    return (NoContent, 200)
+
+
 def get_energy_event(index: int):
     logger.debug(f"Received request for energy event at index {index}")
 
