@@ -8,7 +8,10 @@ from config_handler import APP_CONFIG
 
 
 # ENGINE SETUP
-ENGINE = create_engine(f"{APP_CONFIG['db']['protocol']}://{APP_CONFIG['db']['username']}:{APP_CONFIG['db']['password']}@{APP_CONFIG['db']['host']}/{APP_CONFIG['db']['database']}")
+ENGINE = create_engine(
+        f"{APP_CONFIG['db']['protocol']}://{APP_CONFIG['db']['username']}:{APP_CONFIG['db']['password']}@{APP_CONFIG['db']['host']}/{APP_CONFIG['db']['database']}",
+        pool_recycle=APP_CONFIG['db']['pool_recycle_interval_secs']
+    )
 
 
 # BASIC FETCHERS
@@ -22,9 +25,11 @@ def make_session():
 # TABLE MANAGEMENT
 def drop_all_tables():
     Base.metadata.drop_all(ENGINE)
+    return True
 
 def create_all_tables():
     Base.metadata.create_all(ENGINE)
+    return True
 
 
 # DB SESSION DECORATOR

@@ -2,6 +2,7 @@ import connexion
 import json
 import logging.config
 
+from time import sleep
 from datetime import datetime
 from kafka import KafkaConsumer
 from threading import Thread
@@ -9,6 +10,7 @@ from connexion import NoContent
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session as _Type_SQLAlchemySession
+from sqlalchemy.exc import DBAPIError
 
 from db_utils import use_db_session
 from models import EnergyConsumedReading, InternalTempReading
@@ -33,12 +35,21 @@ def consume_broker_messages():
 
         logger.debug(f"Consumed message from broker: {message}")
 
-        if message["type"] == "energy_consumption":
-            store_energy_consumption_reading(body=payload)
-        elif message["type"] == "internal_temperature":
-            store_internal_temp_reading(body=payload)
-        else:
-            logger.warning(f"Consumed message with unknown type '{message['type']}': {message}")
+        success = False
+        while not success:
+                if message["type"] == "energy_consumption":
+                    success = store_energy_consumption_reading(body=payload)
+                elif message["type"] == "internal_temperature":
+                    success = store_internal_temp_reading(body=payload)
+                else:
+                    logger.warning(f"Consumed message with unknown type '{message['type']}': {message}")
+                    success = True # Skip unknown message types
+
+                if not success:
+                    logger.error(f"Unable to communicate with database! Retrying in {APP_CONFIG['db']['retry_interval_secs']} seconds...")
+                    consumer.pause()
+                    consumer.poll(timeout_ms=APP_CONFIG["db"]["retry_interval_secs"] * 1000) # Wait before retrying
+                    consumer.resume()
 
 
 def health():
@@ -47,23 +58,37 @@ def health():
 
 
 @use_db_session
-def store_energy_consumption_reading(session: _Type_SQLAlchemySession, body: dict):
+def store_energy_consumption_reading(session: _Type_SQLAlchemySession, body: dict) -> bool:
     reading = EnergyConsumedReading(**body) # Unpacking lesgoooo
 
-    session.add(reading)
-    session.commit()
+    try:
+        session.add(reading)
+        session.commit()
+
+    except DBAPIError as e:
+        session.rollback()
+        logger.error(f"Failed to store energy consumption reading for batch with trace id: {body['batch_trace_id']}. Error: {e}")
+        return False
 
     logger.debug(f"Stored energy consumption reading for batch with trace id: {body['batch_trace_id']}")
+    return True
 
 
 @use_db_session
-def store_internal_temp_reading(session: _Type_SQLAlchemySession, body: dict):
+def store_internal_temp_reading(session: _Type_SQLAlchemySession, body: dict) -> bool:
     reading = InternalTempReading(**body)
 
-    session.add(reading)
-    session.commit()
+    try:
+        session.add(reading)
+        session.commit()
+
+    except DBAPIError as e:
+        session.rollback()
+        logger.error(f"Failed to store internal temperature reading for batch with trace id: {body['batch_trace_id']}. Error: {e}")
+        return False
 
     logger.debug(f"Stored internal temperature reading for batch with trace id: {body['batch_trace_id']}")
+    return True
 
 
 @use_db_session
@@ -110,7 +135,16 @@ app.add_api(API_CONFIG["file"],
 if __name__ == "__main__":
     if APP_CONFIG["auto_create_tables"]:
         from db_utils import create_all_tables
-        create_all_tables() # metadata.create_all() checks first by default, so this SHOULD be safe
+
+        success = False
+        while not success:
+            try:
+                success = create_all_tables() # metadata.create_all() checks first by default, so this SHOULD be safe
+                logger.info("Ensured all tables are created in the database.")
+
+            except DBAPIError as e:
+                logger.error(f"Failed to create tables in the database on startup. Retrying in {APP_CONFIG['db']['retry_interval_secs']} seconds. Error: {e}")
+                sleep(APP_CONFIG["db"]["retry_interval_secs"])
     
     consumer_thread = Thread(target=consume_broker_messages, daemon=True)
     consumer_thread.start()

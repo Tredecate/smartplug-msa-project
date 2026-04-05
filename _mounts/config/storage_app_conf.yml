@@ -15,6 +15,8 @@ services:
       password: $torage_5ervice
       host: storage_db
       database: readings
+      retry_interval_secs: 5
+      pool_recycle_interval_secs: 3600
   broker:
     host: kafka
     port: 9092
