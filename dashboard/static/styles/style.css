@@ -28,6 +28,18 @@ code {
         monospace;
 }
 
+h2 {
+    margin-bottom: 0px;
+}
+
+h3 {
+    margin-top: 0px;
+}
+
+h5 {
+    margin: 0;
+}
+
 code:not(#messages *) {
     text-align: left;
     display: flex;
@@ -59,10 +71,6 @@ code > p {
     gap: 0.5em;
 }
 
-#status-controls h5 {
-    margin: 0;
-}
-
 #refresh-rate-ms {
     width: 7em;
     padding: 0.2em;
@@ -82,7 +90,14 @@ code > p {
     margin-top: 1em;
 }
 
-#statistics > div, #analyzer-latest > div {
+#healthcheck {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-top: 1em;
+}
+
+#statistics > div, #analyzer-latest > div, #healthcheck > div {
     border: 1px solid grey;
     background-color: rgba(255, 255, 255, 0.8);
     padding: 1em;

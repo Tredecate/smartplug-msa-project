@@ -8,12 +8,15 @@ const BASE_DOMAIN = window.location.hostname || "localhost"
 
 // INTERVALS
 let REFRESH_RATE_MS = 2000
+let HEALTHCHECK_INTERVAL_MS = 5000
 
 // BASE URLS
+const HEALTHCHECKER_BASE_URL = `http://${BASE_DOMAIN}:8120`
 const PROCESSOR_BASE_URL = `http://${BASE_DOMAIN}:8100`
 const ANALYZER_BASE_URL = `http://${BASE_DOMAIN}:8110`
 
 // API ENDPOINTS
+const HEALTHCHECKER_API_URL = HEALTHCHECKER_BASE_URL + "/status"
 const PROCESSING_STATS_API_URL = PROCESSOR_BASE_URL + "/stats"
 const ANALYZER_API_URL = {
     stats: ANALYZER_BASE_URL + "/stats",
@@ -26,6 +29,7 @@ const ANALYZER_API_URL = {
 // ########################
 
 let statsIntervalId = null
+let healthIntervalId = null
 let refreshRateDebounceId = null
 let latest_analyzer_stats = {}
 
@@ -41,6 +45,14 @@ const getStats = () => {
 const getEvents = () => {
     latest_analyzer_stats["num_energy_events"] ? makeReq(ANALYZER_API_URL.energy, (result) => updateCodeDiv(result, "event-energy")) : null
     latest_analyzer_stats["num_temperature_events"] ? makeReq(ANALYZER_API_URL.temperature, (result) => updateCodeDiv(result, "event-temperature")) : null
+}
+
+// This function fetches the health status of the services and updates the corresponding div
+const getHealth = () => {
+    makeReq(HEALTHCHECKER_API_URL, (result) => {
+        updateCodeDiv(result["health_statuses"], "healthcheck-stats")
+        document.getElementById("health-updated-value").innerText = result["last_update"] ? (new Date(result["last_update"])).toLocaleString() : "N/A"
+    })
 }
 
 // This function makes a GET request to the provided URL
@@ -125,9 +137,17 @@ const setup = () => {
         clearInterval(statsIntervalId)
     }
 
+    if (healthIntervalId) {
+        clearInterval(healthIntervalId)
+    }
+
     // Stats update
     getStats()
     statsIntervalId = setInterval(() => getStats(), REFRESH_RATE_MS)
+
+    // Healthcheck update
+    getHealth()
+    healthIntervalId = setInterval(() => getHealth(), HEALTHCHECK_INTERVAL_MS)
 }
 
 // On your page load, get set, go!
