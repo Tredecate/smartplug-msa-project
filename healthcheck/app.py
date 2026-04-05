@@ -33,11 +33,10 @@ def get_statuses():
         logger.error("Health status file is nonexistent, empty, or malformed")
         return ({"message": "Health statuses not yet recorded"}, 404)
     
-    health_statuses["last_updated"] = last_updated
     logger.debug(f"Returning health statuses: {health_statuses}")
 
     # Return health_statuses dict
-    return (health_statuses, 200)
+    return ({"health_statuses": health_statuses, "last_update": last_updated}, 200)
 
 
 ##### HEALTH CHECK FUNCTIONS #####
