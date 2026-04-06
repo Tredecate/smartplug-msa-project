@@ -15,7 +15,7 @@ handlers:
     filename: /logs/receiver.log
 loggers:
   basicLogger:
-    level: DEBUG
+    level: INFO
     handlers: [console, file]
     propagate: false
   root:

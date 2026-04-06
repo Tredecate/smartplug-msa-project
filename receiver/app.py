@@ -24,7 +24,7 @@ async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
         "batch_trace_id": str(uuid.uuid4())
     }
 
-    logger.info(f"Received energy consumption report with trace id: {plug_data['batch_trace_id']}")
+    logger.debug(f"Received energy consumption report with trace id: {plug_data['batch_trace_id']}")
 
     if plug_data["plug_country"] is None:
         del plug_data["plug_country"]
@@ -45,7 +45,7 @@ async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
     # producer.flush()
     
     # RETURN
-    logger.info(f"Sent all readings to broker for event {plug_data['batch_trace_id']}")
+    logger.debug(f"Sent all readings to broker for event {plug_data['batch_trace_id']}")
     return (NoContent, 201)
 
 
@@ -62,8 +62,8 @@ async def report_internal_temp_readings(body: dict) -> tuple[object, int]:
     if plug_data["plug_country"] is None:
         del plug_data["plug_country"]
 
-    logger.info(f"Received internal temperature report with trace id: {plug_data['batch_trace_id']}")
-    
+    logger.debug(f"Received internal temperature report with trace id: {plug_data['batch_trace_id']}")
+
     # PRODUCE MESSAGES
     for reading in body["readings"]:
         reading_data = plug_data.copy()
@@ -80,7 +80,7 @@ async def report_internal_temp_readings(body: dict) -> tuple[object, int]:
     # producer.flush()
     
     # RETURN
-    logger.info(f"Sent all readings to broker for event {plug_data['batch_trace_id']}")
+    logger.debug(f"Sent all readings to broker for event {plug_data['batch_trace_id']}")
     return (NoContent, 201)
 
 
