@@ -42,7 +42,7 @@ async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
 
         producer.send(BROKER_CONFIG["topic"], json.dumps(message).encode('utf-8'))
     
-    producer.flush()
+    # producer.flush()
     
     # RETURN
     logger.info(f"Sent all readings to broker for event {plug_data['batch_trace_id']}")
@@ -77,7 +77,7 @@ async def report_internal_temp_readings(body: dict) -> tuple[object, int]:
 
         producer.send(BROKER_CONFIG["topic"], json.dumps(message).encode('utf-8'))
     
-    producer.flush()
+    # producer.flush()
     
     # RETURN
     logger.info(f"Sent all readings to broker for event {plug_data['batch_trace_id']}")
