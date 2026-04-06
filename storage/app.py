@@ -2,17 +2,16 @@ import connexion
 import json
 import logging.config
 
-from time import sleep
+from time import sleep, monotonic
 from datetime import datetime
-from kafka import KafkaConsumer
 from threading import Thread
-from connexion import NoContent
 
-from sqlalchemy import select
+from sqlalchemy import select, insert
 from sqlalchemy.orm import Session as _Type_SQLAlchemySession
 from sqlalchemy.exc import DBAPIError
 
 from db_utils import use_db_session
+from kafka_utils import build_consumer, commit_offsets_with_retry
 from models import EnergyConsumedReading, InternalTempReading
 from config_handler import APP_CONFIG, BROKER_CONFIG, API_CONFIG, LOG_CONFIG
 
@@ -20,36 +19,97 @@ from config_handler import APP_CONFIG, BROKER_CONFIG, API_CONFIG, LOG_CONFIG
 def consume_broker_messages():
     logger.debug("Starting broker consumer thread...")
 
-    consumer = KafkaConsumer(
-        BROKER_CONFIG["topic"],
-        bootstrap_servers=f"{BROKER_CONFIG['host']}:{BROKER_CONFIG['port']}",
-        group_id=BROKER_CONFIG["group_id"]
-    )
+    energy_consumption_messages = []
+    temperature_reading_messages = []
+    latest_offsets: dict = {}
+    last_batch_time = monotonic()
+    consumer = build_consumer()
 
-    logger.info(f"Connected to broker at {BROKER_CONFIG['host']}:{BROKER_CONFIG['port']}, subscribed to topic '{BROKER_CONFIG['topic']}'")
+    while True:
+        # Make sure consumer is OK
+        if consumer is None:
+            logger.error(f"Unable to connect to broker. Retrying in {APP_CONFIG['db']['retry_interval_secs']} seconds.")
+            sleep(APP_CONFIG["db"]["retry_interval_secs"])
 
-    for msg in consumer:
-        message_str = msg.value.decode("utf-8")
-        message = json.loads(message_str)
-        payload = message.get("payload", {})
+            consumer = build_consumer()
+            continue
+        
+        # Get messages
+        try:
+            records = consumer.poll(timeout_ms=1000, max_records=BROKER_CONFIG["max_batch_size"])
+        except Exception as e:
+            # Consumer ain't OK
+            logger.error(f"Error occurred while polling messages from broker: {e}")
 
-        logger.debug(f"Consumed message from broker: {message}")
+            try:
+                consumer.close(autocommit=False)
+            except Exception:
+                pass
+            
+            consumer = None
+            continue
 
-        success = False
-        while not success:
+        # You've got mail!
+        for topic_partition, record_batch in records.items():
+            for msg in record_batch:
+                message_str = msg.value.decode("utf-8")
+                message = json.loads(message_str)
+                payload = message.get("payload", {})
+
+                # Put message into appropriate buffer
                 if message["type"] == "energy_consumption":
-                    success = store_energy_consumption_reading(body=payload)
+                    energy_consumption_messages.append(payload)
                 elif message["type"] == "internal_temperature":
-                    success = store_internal_temp_reading(body=payload)
+                    temperature_reading_messages.append(payload)
                 else:
+                    # Wtf did I just eat?
                     logger.warning(f"Consumed message with unknown type '{message['type']}': {message}")
-                    success = True # Skip unknown message types
 
-                if not success:
+                logger.debug(f"Consumed message from broker: {message}")
+                latest_offsets[topic_partition] = (msg.offset + 1, msg.timestamp, msg.leader_epoch)
+
+        # Check if it's time to commit
+        buffer_size = len(energy_consumption_messages) + len(temperature_reading_messages)
+        buffer_full = buffer_size >= BROKER_CONFIG["max_batch_size"]
+        buffer_expiring = (monotonic() - last_batch_time) >= BROKER_CONFIG["max_batch_age_ms"] / 1000
+
+        # It's tiiiiiiiiiiiiiime! 🧊
+        if (buffer_full or buffer_expiring) and buffer_size > 0:
+            logger.info(f"Committing {buffer_size} messages to database.")
+
+            db_commit_success = False
+            while not db_commit_success:
+                db_commit_success = commit_buffers(
+                    energy_buffer=energy_consumption_messages, 
+                    temperature_buffer=temperature_reading_messages
+                )
+
+                if db_commit_success:
+                    consumer = commit_offsets_with_retry(consumer, latest_offsets.copy())
+
+                    energy_consumption_messages.clear()
+                    temperature_reading_messages.clear()
+                    latest_offsets.clear()
+                    last_batch_time = monotonic()
+
+                else:
                     logger.error(f"Unable to communicate with database! Retrying in {APP_CONFIG['db']['retry_interval_secs']} seconds...")
-                    consumer.pause()
-                    consumer.poll(timeout_ms=APP_CONFIG["db"]["retry_interval_secs"] * 1000) # Wait before retrying
-                    consumer.resume()
+
+                    try:
+                        assigned = consumer.assignment()
+                        consumer.pause(*(assigned if assigned else [])) # Pause consumption while we wait for the DB to hopefully come back up
+                        consumer.poll(timeout_ms=APP_CONFIG["db"]["retry_interval_secs"] * 1000) # Wait before retrying but tell kafka we're alive
+                        consumer.resume(*(assigned if assigned else [])) # Resume consumption once we're ready to try again
+
+                    except Exception as e:
+                        logger.error(f"Error occurred while pausing/resuming consumer during DB retry wait: {e}")
+
+                        try:
+                            consumer.close(autocommit=False)
+                        except Exception:
+                            pass
+
+                        consumer = None # Force a full consumer rebuild on the next loop iteration
 
 
 def health():
@@ -58,36 +118,27 @@ def health():
 
 
 @use_db_session
-def store_energy_consumption_reading(session: _Type_SQLAlchemySession, body: dict) -> bool:
-    reading = EnergyConsumedReading(**body) # Unpacking lesgoooo
-
+def commit_buffers(session: _Type_SQLAlchemySession, energy_buffer: list[dict], temperature_buffer: list[dict]) -> bool:
     try:
-        session.add(reading)
+        if energy_buffer:
+            session.execute(
+                insert(EnergyConsumedReading),
+                energy_buffer
+            )
+
+        if temperature_buffer:
+            session.execute(
+                insert(InternalTempReading),
+                temperature_buffer
+            )
+
         session.commit()
 
     except DBAPIError as e:
         session.rollback()
-        logger.error(f"Failed to store energy consumption reading for batch with trace id: {body['batch_trace_id']}. Error: {e}")
+        logger.error(f"Failed to store batch in the database. Error: {e}")
         return False
-
-    logger.debug(f"Stored energy consumption reading for batch with trace id: {body['batch_trace_id']}")
-    return True
-
-
-@use_db_session
-def store_internal_temp_reading(session: _Type_SQLAlchemySession, body: dict) -> bool:
-    reading = InternalTempReading(**body)
-
-    try:
-        session.add(reading)
-        session.commit()
-
-    except DBAPIError as e:
-        session.rollback()
-        logger.error(f"Failed to store internal temperature reading for batch with trace id: {body['batch_trace_id']}. Error: {e}")
-        return False
-
-    logger.debug(f"Stored internal temperature reading for batch with trace id: {body['batch_trace_id']}")
+    
     return True
 
 
@@ -98,7 +149,11 @@ def get_energy_consumption_readings(session: _Type_SQLAlchemySession, start_time
         EnergyConsumedReading.date_created < datetime.fromisoformat(end_timestamp)
     )
 
-    readings = session.execute(query).scalars().all()
+    try:
+        readings = session.execute(query).scalars().all()
+    except DBAPIError as e:
+        logger.error(f"Failed to retrieve energy consumption readings from the database. Error: {e}")
+        return ({"error": "Failed to retrieve energy consumption readings from the database."}, 500)
 
     logger.debug(f"Retrieved {len(readings)} energy consumption readings created between {start_timestamp} and {end_timestamp}")
 
@@ -112,7 +167,11 @@ def get_internal_temp_readings(session: _Type_SQLAlchemySession, start_timestamp
         InternalTempReading.date_created < datetime.fromisoformat(end_timestamp)
     )
 
-    readings = session.execute(query).scalars().all()
+    try:
+        readings = session.execute(query).scalars().all()
+    except DBAPIError as e:
+        logger.error(f"Failed to retrieve internal temperature readings from the database. Error: {e}")
+        return ({"error": "Failed to retrieve internal temperature readings from the database."}, 500)
 
     logger.debug(f"Retrieved {len(readings)} internal temperature readings created between {start_timestamp} and {end_timestamp}")
 

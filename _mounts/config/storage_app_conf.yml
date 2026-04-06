@@ -22,3 +22,5 @@ services:
     port: 9092
     topic: events
     group_id: storage_service_group
+    max_batch_age_ms: 500
+    max_batch_size: 100
