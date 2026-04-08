@@ -11,6 +11,7 @@ Created for ACIT 3855 (Service Based Architecture) during the Winter 2026 term a
     - [Receiver API (Port `8080`)](#receiver-api-port-8080)
     - [Processor API (Port `8100`)](#processor-api-port-8100)
     - [Analyzer API (Port `8110`)](#analyzer-api-port-8110)
+    - [Health Status API (Port `8120`)](#health-status-api-port-8120)
   - [Internal](#internal)
     - [Storage Service](#storage-service)
     - [Storage Database](#storage-database)
@@ -58,6 +59,9 @@ Another simple REST API that periodically queries the internal storage service f
 
 #### Analyzer API (Port `8110`)
 A REST API with three endpoints that acts as a window into Kafka, providing event counts and index-based queries for raw messages.
+
+#### Health Status API (Port `8120`)
+A single endpoint on `/status` that reports which services are responsive.
 
 ### Internal
 #### Storage Service
