@@ -22,7 +22,7 @@ def health():
 
 
 def get_statuses():
-    logger.info("GET /statuses request received")
+    logger.info("GET /status request received")
 
     # Read health statuses from disk
     health_statuses = read_dict_from_file(APP_CONFIG["health_status_file"])
