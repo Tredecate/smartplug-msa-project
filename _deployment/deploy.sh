@@ -120,4 +120,4 @@ cd ../ansible
 ansible-playbook playbook.yml --private-key="$key_path"
 
 # Print application dashboard URL
-echo "Deployment complete. You can access the application at http://$(cat inventory.ini):8000"
+echo "Deployment complete. You can access the application at http://$(cat inventory.ini):80"
