@@ -36,52 +36,16 @@ data "aws_subnet" "default" {
 
 resource "aws_security_group" "allow_ports" {
   name        = "allow_smartplug_msa_ports"
-  description = "Allow 8000, 8080, 8100, 8110, and 22"
+  description = "Allow 80 and 22"
   vpc_id      = data.aws_vpc.default.id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_8000" {
+resource "aws_vpc_security_group_ingress_rule" "allow_80" {
   security_group_id = aws_security_group.allow_ports.id
 
   cidr_ipv4   = "0.0.0.0/0"
-  from_port   = 8000
-  to_port     = 8000
-  ip_protocol = "tcp"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "allow_8080" {
-  security_group_id = aws_security_group.allow_ports.id
-
-  cidr_ipv4   = "0.0.0.0/0"
-  from_port   = 8080
-  to_port     = 8080
-  ip_protocol = "tcp"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "allow_8100" {
-  security_group_id = aws_security_group.allow_ports.id
-
-  cidr_ipv4   = "0.0.0.0/0"
-  from_port   = 8100
-  to_port     = 8100
-  ip_protocol = "tcp"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "allow_8110" {
-  security_group_id = aws_security_group.allow_ports.id
-
-  cidr_ipv4   = "0.0.0.0/0"
-  from_port   = 8110
-  to_port     = 8110
-  ip_protocol = "tcp"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "allow_8120" {
-  security_group_id = aws_security_group.allow_ports.id
-
-  cidr_ipv4   = "0.0.0.0/0"
-  from_port   = 8120
-  to_port     = 8120
+  from_port   = 80
+  to_port     = 80
   ip_protocol = "tcp"
 }
 
