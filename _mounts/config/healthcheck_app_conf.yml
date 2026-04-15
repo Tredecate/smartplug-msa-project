@@ -8,6 +8,7 @@ api:
     allow_origins: ["*"]
     allow_methods: ["*"]
     allow_headers: ["*"]
+  base_path: "/healthcheck"
 services:
   self:
     host: 0.0.0.0
