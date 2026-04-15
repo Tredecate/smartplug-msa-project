@@ -11,9 +11,9 @@ let REFRESH_RATE_MS = 2000
 let HEALTHCHECK_INTERVAL_MS = 5000
 
 // BASE URLS
-const HEALTHCHECKER_BASE_URL = `http://${BASE_DOMAIN}:8000/healthcheck`
-const PROCESSOR_BASE_URL = `http://${BASE_DOMAIN}:8000/processor`
-const ANALYZER_BASE_URL = `http://${BASE_DOMAIN}:8000/analyzer`
+const HEALTHCHECKER_BASE_URL = `http://${BASE_DOMAIN}:80/healthcheck`
+const PROCESSOR_BASE_URL = `http://${BASE_DOMAIN}:80/processor`
+const ANALYZER_BASE_URL = `http://${BASE_DOMAIN}:80/analyzer`
 
 // API ENDPOINTS
 const HEALTHCHECKER_API_URL = HEALTHCHECKER_BASE_URL + "/status"
