@@ -17,7 +17,7 @@ services:
     healthcheck_timeout_secs: 5
     health_status_file: "/data/healthchecks.json"
   checklist:
-    receiver: http://receiver_svc:8080/health
-    storage: http://storage_svc:8090/health
-    processor: http://processor_svc:8100/health
-    analyzer: http://analyzer_svc:8110/health
+    receiver: http://receiver_svc:8080/receiver/health
+    storage: http://storage_svc:8090/storage/health
+    processor: http://processor_svc:8100/processor/health
+    analyzer: http://analyzer_svc:8110/analyzer/health

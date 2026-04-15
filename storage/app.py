@@ -187,7 +187,8 @@ logger = logging.getLogger("basicLogger")
 app = connexion.FlaskApp(__name__, specification_dir=API_CONFIG["spec_dir"])
 app.add_api(API_CONFIG["file"], 
             strict_validation=API_CONFIG["strict_validation"], 
-            validate_responses=API_CONFIG["validate_responses"])
+            validate_responses=API_CONFIG["validate_responses"],
+            base_path=API_CONFIG["base_path"])
 
 
 # GO GO GO
