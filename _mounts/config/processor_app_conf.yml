@@ -8,6 +8,7 @@ api:
     allow_origins: ["*"]
     allow_methods: ["*"]
     allow_headers: ["*"]
+  base_path: "/processor"
 services:
   self:
     host: 0.0.0.0
@@ -16,7 +17,7 @@ services:
     stats_file: "/data/stats.json"
     fallback_start_time: "1970-01-01T00:00:00Z"
   storage:
-    baseurl: http://storage_svc:8090
+    baseurl: http://storage_svc:8090/storage
     endpoints:
       energy: /plug-data/energy-consumed
       temp: /plug-data/internal-temp

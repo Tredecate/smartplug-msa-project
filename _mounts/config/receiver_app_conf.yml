@@ -4,6 +4,7 @@ api:
   spec_dir: "./"
   strict_validation: true
   validate_responses: true
+  base_path: "/receiver"
 services:
   self:
     host: 0.0.0.0

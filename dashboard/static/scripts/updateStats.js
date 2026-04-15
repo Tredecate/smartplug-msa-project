@@ -11,9 +11,9 @@ let REFRESH_RATE_MS = 2000
 let HEALTHCHECK_INTERVAL_MS = 5000
 
 // BASE URLS
-const HEALTHCHECKER_BASE_URL = `http://${BASE_DOMAIN}:8120`
-const PROCESSOR_BASE_URL = `http://${BASE_DOMAIN}:8100`
-const ANALYZER_BASE_URL = `http://${BASE_DOMAIN}:8110`
+const HEALTHCHECKER_BASE_URL = `http://${BASE_DOMAIN}:80/healthcheck`
+const PROCESSOR_BASE_URL = `http://${BASE_DOMAIN}:80/processor`
+const ANALYZER_BASE_URL = `http://${BASE_DOMAIN}:80/analyzer`
 
 // API ENDPOINTS
 const HEALTHCHECKER_API_URL = HEALTHCHECKER_BASE_URL + "/status"
@@ -69,7 +69,16 @@ const makeReq = (url, cb) => {
 }
 
 // This function updates the target div with the provided content
-const updateCodeDiv = (result, elemId) => document.getElementById(elemId).innerHTML = objectToHTML(result)
+const updateCodeDiv = (result, elemId) => {
+    const targetElem = document.getElementById(elemId)
+    const htmlFromObject = objectToHTML(result)
+
+    if (targetElem.innerHTML == htmlFromObject) {
+        return
+    }
+    
+    document.getElementById(elemId).innerHTML = objectToHTML(result)
+}
 
 // aight, i'll match your freak, mr. instructor. one-liner to convert an object to an HTML list. don't @ me
 const objectToHTML = (obj) => Object.entries(obj).map(([key, value]) => `<p><strong>${key}:</strong><br>${value}</p>`).join("")
