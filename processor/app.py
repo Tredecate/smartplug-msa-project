@@ -47,7 +47,7 @@ def update_statistics():
     latest_time = datetime.fromisoformat(current_stats.get("last_updated", APP_CONFIG["fallback_start_time"]))
 
     # Go fish
-    energy_data, temp_data = fetch_data(latest_time + timedelta(microseconds=1), current_time)
+    energy_data, temp_data = fetch_data(latest_time + timedelta(microseconds=1), current_time - timedelta(seconds=2))
 
     logger.info(f"Fetched {len(energy_data)} new energy records and {len(temp_data)} new temperature records")
 
