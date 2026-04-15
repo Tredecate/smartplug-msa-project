@@ -5,9 +5,9 @@ api:
   strict_validation: true
   validate_responses: true
   cors:
-    allow_origins: ["*"]
-    allow_methods: ["*"]
-    allow_headers: ["*"]
+    allow_origins: []
+    allow_methods: []
+    allow_headers: []
   base_path: "/analyzer"
 services:
   self:
