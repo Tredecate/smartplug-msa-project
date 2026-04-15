@@ -17,6 +17,8 @@ services:
       context: ./receiver
       additional_contexts:
         shared: ./_common
+    deploy:
+      replicas: 3
     expose:
       - "8080"
     volumes:
