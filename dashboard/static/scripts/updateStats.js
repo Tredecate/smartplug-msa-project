@@ -74,10 +74,10 @@ const updateCodeDiv = (result, elemId) => {
     const htmlFromObject = objectToHTML(result)
 
     if (targetElem.innerHTML == htmlFromObject) {
-        return
+        return htmlFromObject
     }
     
-    document.getElementById(elemId).innerHTML = objectToHTML(result)
+    return document.getElementById(elemId).innerHTML = objectToHTML(result)
 }
 
 // aight, i'll match your freak, mr. instructor. one-liner to convert an object to an HTML list. don't @ me
