@@ -1,5 +1,6 @@
 import yaml
 from pathlib import Path
+from os import environ
 
 
 # UTIL FUNCTIONS
@@ -65,3 +66,6 @@ API_CONFIG = config_dict["api"]
 
 # Log config
 LOG_CONFIG = log_config_dict
+
+# Env vars
+ENV_CONFIG = environ.copy()

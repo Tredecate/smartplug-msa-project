@@ -11,7 +11,7 @@ from starlette.middleware.cors import CORSMiddleware
 from kafka import KafkaConsumer, TopicPartition
 
 import message_cache
-from config_handler import APP_CONFIG, API_CONFIG, BROKER_CONFIG, LOG_CONFIG
+from config_handler import APP_CONFIG, API_CONFIG, BROKER_CONFIG, LOG_CONFIG, ENV_CONFIG
 
 
 ##### MESSAGE CACHE #####
@@ -143,14 +143,24 @@ app.add_api(API_CONFIG["file"],
             validate_responses=API_CONFIG["validate_responses"],
             base_path=API_CONFIG["base_path"])
 
-app.add_middleware(
-    CORSMiddleware,
-    position=MiddlewarePosition.BEFORE_EXCEPTION,
-    allow_origins=API_CONFIG["cors"]["allow_origins"],
-    allow_methods=API_CONFIG["cors"]["allow_methods"],
-    allow_headers=API_CONFIG["cors"]["allow_headers"],
-    allow_credentials=True,
-)
+if ENV_CONFIG.get("CORS_ALLOW_ALL", "false").lower() in ["true", "1", "yes", "y"]:
+    app.add_middleware(
+        CORSMiddleware,
+        position=MiddlewarePosition.BEFORE_EXCEPTION,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+        allow_credentials=True,
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        position=MiddlewarePosition.BEFORE_EXCEPTION,
+        allow_origins=API_CONFIG["cors"]["allow_origins"],
+        allow_methods=API_CONFIG["cors"]["allow_methods"],
+        allow_headers=API_CONFIG["cors"]["allow_headers"],
+        allow_credentials=True,
+    )
 
 
 if __name__ == "__main__":
