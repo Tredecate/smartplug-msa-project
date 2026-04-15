@@ -20,7 +20,7 @@ data "aws_ami" "amazon_linux" {
   owners      = ["amazon"]
   filter {
     name   = "name"
-    values = ["al2023-ami-2023.*-kernel-6.18-x86_64"]
+    values = ["al2023-ami-2023.*-kernel-6.18-arm64"]
   }
 }
 
@@ -72,7 +72,7 @@ resource "aws_key_pair" "temp_msa_key" {
 
 resource "aws_instance" "smartplug_msa" {
   ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t3.small"
+  instance_type          = "t4g.medium"
   subnet_id              = data.aws_subnet.default.id
   vpc_security_group_ids = [aws_security_group.allow_ports.id]
   key_name               = aws_key_pair.temp_msa_key.key_name
