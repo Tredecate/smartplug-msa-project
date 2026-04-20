@@ -16,6 +16,24 @@ paths:
         '200':
           description: API is alive and running
 
+  /stats:
+    get:
+      summary: Checks the status of the Receiver
+      operationId: app.get_stats
+      description: Service is OK if this endpoint returns a response
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status_datetime:
+                    type: string
+                    format: date-time
+                    example: 2025-12-12T09:35:34Z
+
   /plug-data/energy-consumed:
     post:
       summary: Reports a batch of energy consumption readings
