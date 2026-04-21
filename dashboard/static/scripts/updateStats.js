@@ -14,8 +14,11 @@ let HEALTHCHECK_INTERVAL_MS = 5000
 const HEALTHCHECKER_BASE_URL = `http://${BASE_DOMAIN}:80/healthcheck`
 const PROCESSOR_BASE_URL = `http://${BASE_DOMAIN}:80/processor`
 const ANALYZER_BASE_URL = `http://${BASE_DOMAIN}:80/analyzer`
+const STATS_BASE_URL = `http://${BASE_DOMAIN}:80/stats`
 
 // API ENDPOINTS
+const STATS_API_UPDATE_URL = STATS_BASE_URL + "/update"
+const STATS_API_GET_URL = STATS_BASE_URL + "/stats"
 const HEALTHCHECKER_API_URL = HEALTHCHECKER_BASE_URL + "/status"
 const PROCESSING_STATS_API_URL = PROCESSOR_BASE_URL + "/stats"
 const ANALYZER_API_URL = {
@@ -30,6 +33,7 @@ const ANALYZER_API_URL = {
 
 let statsIntervalId = null
 let healthIntervalId = null
+let statusIntervalId = null
 let refreshRateDebounceId = null
 let latest_analyzer_stats = {}
 
@@ -55,9 +59,19 @@ const getHealth = () => {
     })
 }
 
-// This function makes a GET request to the provided URL
-const makeReq = (url, cb) => {
-    fetch(url)
+// This function fetches the health status of the services and updates the corresponding div
+const getStatusStats = () => {
+    makeReq(STATS_API_UPDATE_URL, (result) => {
+        console.log("Stats update result: ", result)
+    }, "PUT")
+    makeReq(STATS_API_GET_URL, (result) => {
+        updateCodeDiv(result, "statuscheck-stats")
+    })
+}
+
+// This function makes a request to the provided URL, defaulting to GET
+const makeReq = (url, cb, method = "GET") => {
+    fetch(url, { method })
         .then(res => res.json())
         .then((result) => {
             console.log("Received data: ", result)
@@ -157,6 +171,9 @@ const setup = () => {
     // Healthcheck update
     getHealth()
     healthIntervalId = setInterval(() => getHealth(), HEALTHCHECK_INTERVAL_MS)
+
+    getStatusStats()
+    statusIntervalId = setInterval(() => getStatusStats(), HEALTHCHECK_INTERVAL_MS)
 }
 
 // On your page load, get set, go!

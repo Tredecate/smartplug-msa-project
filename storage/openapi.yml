@@ -52,8 +52,34 @@ paths:
                 items:
                   $ref: '#/components/schemas/InternalTempReading'
 
+  /stats:
+    get:
+      summary: Fetches count of event types from database
+      description: Returns the count of energy reading events and temperature reading events in the database
+      operationId: app.get_event_stats
+      responses:
+        '200':
+          description: Event statistics successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventStats'
+
 components:
   schemas:
+    EventStats:
+      type: object
+      required:
+        - num_energy_events
+        - num_temperature_events
+      properties:
+        num_energy_events:
+          type: integer
+          example: 100
+        num_temperature_events:
+          type: integer
+          example: 100
+
     EnergyConsumedReading:
       type: object
       required:
