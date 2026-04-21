@@ -1,0 +1,22 @@
+version: 1
+api:
+  file: openapi.yml
+  spec_dir: "./"
+  strict_validation: true
+  validate_responses: true
+  cors:
+    allow_origins: []
+    allow_methods: []
+    allow_headers: []
+  base_path: "/stats"
+services:
+  self:
+    host: 0.0.0.0
+    port: 8130
+    stats_timeout_secs: 2
+    stats_file: "/data/status.json"
+  checklist:
+    receiver: http://receiver_svc:8080/receiver/stats
+    storage: http://storage_svc:8090/storage/stats
+    processing: http://processor_svc:8100/processor/stats
+    analyzer: http://analyzer_svc:8110/analyzer/stats

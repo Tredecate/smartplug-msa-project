@@ -6,7 +6,7 @@ from time import sleep, monotonic
 from datetime import datetime
 from threading import Thread
 
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, func
 from sqlalchemy.orm import Session as _Type_SQLAlchemySession
 from sqlalchemy.exc import DBAPIError
 
@@ -115,6 +115,24 @@ def consume_broker_messages():
 def health():
     logger.debug("Received health check request")
     return (connexion.NoContent, 200)
+
+
+@use_db_session
+def get_event_stats(session: _Type_SQLAlchemySession) -> tuple[object, int]:
+    """Returns total count of energy consumption and internal temperature events stored in the database"""
+    logger.debug("Received request for event stats")
+
+    # session.query().count() looks so nice, but it's deprecated :(
+    # so I'm using this https://docs.sqlalchemy.org/en/20/tutorial/data_select.html#working-with-sql-functions
+    num_energy_events = session.execute(select(func.count()).select_from(EnergyConsumedReading)).scalar()
+    num_temperature_events = session.execute(select(func.count()).select_from(InternalTempReading)).scalar()
+
+    # build dict
+    results = {"num_energy_events": num_energy_events, "num_temperature_events": num_temperature_events}
+    logger.debug(f"Returned event counts from database: {results}")
+
+    # return!
+    return (results, 200)
 
 
 @use_db_session

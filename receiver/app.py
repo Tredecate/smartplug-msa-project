@@ -14,6 +14,12 @@ def health():
     return (NoContent, 200)
 
 
+def get_stats():
+    """Returns the server's current datetime in UTC"""
+    logger.debug("Received stats request")
+    return ({"status_datetime": datetime.now(tz=timezone.utc).isoformat()}, 200)
+
+
 async def report_energy_consumption_readings(body: dict) -> tuple[object, int]:
     # INIT
     plug_data = {
